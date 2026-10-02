@@ -205,11 +205,13 @@ def extract(text: str, *, ambiguous_words: bool = True) -> list[Quantity]:
         low = word.lower()
         if not free(m.start(), m.end()):
             continue
+        # "three-year", "five-star": the number is the first part ("twenty-one" is whole).
+        head = low if low in _NUMBER_WORDS or "-" not in low else low.split("-", 1)[0]
         if word in _MONTHS or low in _ITALIAN_MONTH_FORMS:
             month = _MONTHS.get(word) or _MONTHS[low]
             add(word, m.start(), m.end(), {float(month)}, "month")
-        elif low in _NUMBER_WORDS and (ambiguous_words or low not in _AMBIGUOUS_ITALIAN):
-            add(word, m.start(), m.end(), {float(_NUMBER_WORDS[low])})
+        elif head in _NUMBER_WORDS and (ambiguous_words or head not in _AMBIGUOUS_ITALIAN):
+            add(word, m.start(), m.end(), {float(_NUMBER_WORDS[head])})
         elif low in _CLOCK_WORDS:
             add(word, m.start(), m.end(), set(_CLOCK_WORDS[low]))
     found.sort(key=lambda q: (q.start, q.kind))

@@ -89,3 +89,11 @@ def test_english_due_is_not_the_italian_number_two():
     assert missing_quantities("Abbiamo assunto due ingegneri.",
                               "Abbiamo assunto tre ingegneri.") == ["due"]
     assert missing_quantities("The user has two cats.", "Utente: ho due gatti.") == []
+
+
+def test_a_number_word_in_a_hyphenated_compound_counts():
+    assert missing_quantities("He was sentenced to three years of probation.",
+                              "He received a three-year probation sentence.") == []
+    assert missing_quantities("It got five stars.", "A five-star review.") == []
+    assert missing_quantities("He got a four-year sentence.",
+                              "He got a three-year sentence.") == ["four-year"]
