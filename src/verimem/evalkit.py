@@ -250,6 +250,8 @@ class AskReport:
     threshold: float
     judge: str = ""
     policy: str = ""
+    right_in_related: int = 0  # answerable, not answered, but the right fact is in `related`
+    unanswerable_with_related: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return dict(self.__dict__)
@@ -264,13 +266,14 @@ def evaluate_ask(memory_factory: Any, qa_path: str | Path, *, k: int = 5) -> Ask
     results = mem.remember_many([Item(f["text"], source=f["text"]) for f in data["facts"]])
     id_of = {f["id"]: r.fact_id for f, r in zip(data["facts"], results, strict=True)}
     counts = dict.fromkeys(("right", "wrong_abst", "wrong_fact", "right_abst", "false",
-                            "miss"), 0)
+                            "miss", "right_related", "unans_related"), 0)
     pos: list[float] = []
     neg: list[float] = []
     for q in data["questions"]:
         want = {id_of[a] for a in q["answer"]}
         ans = mem.ask(q["q"], k=k)
         kept = {r.fact.id for r in ans.facts}
+        related = {r.fact.id for r in ans.related}
         scores = dict(ans.candidates)
         if want:
             if not want & set(scores) and not want & kept:
@@ -282,15 +285,19 @@ def evaluate_ask(memory_factory: Any, qa_path: str | Path, *, k: int = 5) -> Ask
                 counts["right"] += 1
             else:
                 counts["wrong_fact"] += 1
+            if not want & kept and want & related:
+                counts["right_related"] += 1
         else:
             neg.append(max(scores.values(), default=0.0))
             counts["false" if kept else "right_abst"] += 1
+            counts["unans_related"] += bool(related)
     mem.close()
     n_ans = sum(1 for q in data["questions"] if q["answer"])
     return AskReport(len(data["questions"]), n_ans, counts["right"], counts["wrong_abst"],
                      counts["wrong_fact"], counts["right_abst"], counts["false"],
                      counts["miss"], auroc(pos, neg),
-                     mem.policy.relevance_threshold, mem.verifier.judge.id, mem.policy.version)
+                     mem.policy.relevance_threshold, mem.verifier.judge.id, mem.policy.version,
+                     counts["right_related"], counts["unans_related"])
 
 
 def render_ask_report(r: AskReport, *, dataset: str, command: str) -> str:
@@ -309,5 +316,9 @@ def render_ask_report(r: AskReport, *, dataset: str, command: str) -> str:
         f"| {r.questions} ({r.answerable}) | {r.answered_right} / {r.answerable} | "
         f"{r.wrong_abstentions} | {r.wrong_fact} | {r.retrieval_misses} | "
         f"{r.right_abstentions} / {unanswerable} | {r.false_answers} | {_num(r.auroc, '.3f')} |",
+        "",
+        f"Not answered but handed over among the related facts: {r.right_in_related} of the "
+        f"{r.answerable - r.answered_right} answerable questions not answered. Unanswerable "
+        f"questions that got related facts: {r.unanswerable_with_related} of {unanswerable}.",
         "",
     ])

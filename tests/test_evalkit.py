@@ -116,6 +116,25 @@ def test_evaluate_ask_counts_answers_and_abstentions(tmp_path):
     assert (rep.answered_right, rep.wrong_abstentions, rep.right_abstentions,
             rep.false_answers) == (2, 0, 2, 0)
     assert rep.auroc == 1.0
+    # "How old is Laura?" gets both Laura facts as related (0.1 is above the 0.05 floor)
+    assert (rep.right_in_related, rep.unanswerable_with_related) == (0, 1)
+
+
+def test_evaluate_ask_counts_right_facts_handed_over_as_related(tmp_path):
+    qa = {"facts": [{"id": "f1", "text": "Laura works at Finvia."}],
+          "questions": [{"q": "Where is Laura employed?", "answer": ["f1"]}]}
+    path = tmp_path / "qa.json"
+    path.write_text(json.dumps(qa))
+
+    class Rel:
+        id = "rel"
+
+        def score(self, question, passages):
+            return [0.2 for _ in passages]  # related, not confirmed as an answer
+
+    v = Verifier(judge=FakeJudge(), policy=make_policy(relevance_threshold=0.5))
+    rep = evaluate_ask(lambda: Memory(verifier=v, relevance=Rel()), path)
+    assert (rep.answered_right, rep.wrong_abstentions, rep.right_in_related) == (0, 1, 1)
 
 
 def test_report_lists_false_accepts_before_misses():

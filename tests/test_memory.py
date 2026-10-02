@@ -128,6 +128,40 @@ def test_ask_answers_with_relevant_facts_or_abstains():
     assert c.abstained and "shares words" in c.reason
 
 
+class TableRelevance:
+    id = "table"
+
+    def __init__(self, table: dict[str, float]) -> None:
+        self.table = table
+
+    def score(self, question: str, passages: Sequence[str]) -> list[float]:
+        return [self.table.get(p, 0.0) for p in passages]
+
+
+def test_ask_hands_over_related_facts_it_cannot_confirm_as_answers():
+    table = {"Anna joined Finvia in 2021.": 0.9, "Anna leads the data platform team.": 0.11,
+             "Anna likes jazz.": 0.01}
+    m = make_memory(relevance=TableRelevance(table), relevance_threshold=0.4,
+                    relevance_related_threshold=0.05)
+    for fact in table:
+        m.remember(fact, source=fact)
+    a = m.ask("What about Anna?")
+    assert [r.fact.text for r in a.facts] == ["Anna joined Finvia in 2021."]
+    assert [(r.fact.text, r.score) for r in a.related] == [
+        ("Anna leads the data platform team.", 0.11)]
+    assert a.to_dict()["related"][0]["text"] == "Anna leads the data platform team."
+
+    del table["Anna joined Finvia in 2021."]
+    b = make_memory(relevance=TableRelevance(table), relevance_threshold=0.4,
+                    relevance_related_threshold=0.05)
+    for fact in table:
+        b.remember(fact, source=fact)
+    answer = b.ask("What about Anna?")
+    assert answer.abstained and answer.facts == ()
+    assert [r.fact.text for r in answer.related] == ["Anna leads the data platform team."]
+    assert "1 related" in answer.reason
+
+
 def test_ask_does_not_use_unverified_facts():
     m = make_memory(relevance=FakeRelevance({"jazz": "jazz"}))
     m.remember("Maria likes jazz.")  # no source: unverified

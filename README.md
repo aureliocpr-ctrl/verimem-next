@@ -192,9 +192,9 @@ Speed on 4 CPU cores without GPU: 7.4 s to load the judge, then 0.07-0.28 s per 
   provenance you can rely on, call `remember` from your application with the text you hold.
 - **`ask` abstains too often.** On the two QA sets it missed 8 and 10 of 25 answerable
   questions, for example "Who leads the data platform team?" against "Anna leads the data
-  platform team." (relevance 0.11). Keyword retrieval had found the right fact for 25 and 23
-  of those 25 questions, so `recall` (keyword search over verified facts) is the fallback,
-  and the MCP server tells agents to use it.
+  platform team." (relevance 0.11). It then hands over the verified facts it found related,
+  with their relevance, and leaves the judgement to the caller: the right fact was among
+  them for 8 of the 8 and 5 of the 10 misses.
 - **The judge makes mistakes.** It accepted "Davide è il responsabile IT" (head of IT) from
   "Davide (IT di Logistica Delta)", and misses some paraphrases. Questions in the source can lend
   a claim support ("Why does the government lie about…?").

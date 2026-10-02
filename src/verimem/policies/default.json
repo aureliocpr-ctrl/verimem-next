@@ -21,6 +21,7 @@
     "system"
   ],
   "relevance_threshold": 0.4,
+  "relevance_related_threshold": 0.05,
   "relevance_templates": {
     "en": "This text answers the question: {question}",
     "it": "Questo testo risponde alla domanda: {question}"

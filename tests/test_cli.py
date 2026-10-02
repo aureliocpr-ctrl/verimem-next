@@ -169,3 +169,20 @@ def test_recall_does_not_print_raw_keyword_scores(tmp_path, capsys):
         "Maria moved from Rome to Milan.", *common)
     code, out = run(capsys, "recall", "Maria Milan", "--all", *common)
     assert code == 0 and "Maria moved to Milan." in out and "score" not in out
+
+
+def test_ask_output_separates_answers_from_related_facts():
+    from verimem.cli import answer_text
+    from verimem.types import Answer, Fact, Label, Recalled, Status
+
+    def fact(text: str) -> Fact:
+        return Fact(id="f1", text=text, status=Status.VERIFIED, label=Label.SUPPORTED,
+                    support=1.0, subject=None, source_id=None, source_origin=None,
+                    source_author="user", evidence=None, judge="fake:v1", policy="test",
+                    reason="", created_at="2026-10-02T00:00:00Z", valid_from=None)
+
+    a = Answer("Who leads the team?", (), True, "no verified fact answers the question",
+               related=(Recalled(fact("Anna leads the data platform team."), 0.11),))
+    text = answer_text(a)
+    assert text.startswith("not in memory:")
+    assert "related" in text and "Anna leads the data platform team." in text

@@ -145,8 +145,22 @@ The threshold trades one error for the other. On the set it was chosen on
 contains every word the question asks about (commit cecfccb) took qa-mini from 17 to 23
 right answers with no false answer, but on the held-out set it gave 16 right answers instead
 of 15 and 4 false answers instead of 2, so it was reverted (09426c3). Better relevance needs
-a better model, not more word rules (CHECKLIST, phase 10). Meanwhile the MCP server tells
-agents to fall back on `recall` when `ask` abstains, and to judge relevance themselves.
+a better model, not more word rules (CHECKLIST, phase 3).
+
+**Related facts.** Instead of moving the threshold, `ask` keeps it and hands over, as
+`related`, the verified facts it retrieved whose relevance falls between a floor (0.05) and
+the threshold: true facts the check could not confirm as answers, for the caller (usually an
+LLM) to judge. The floor sits below the lowest relevance of a right fact on qa-mini (0.083).
+Same commands as the table above:
+
+| Set | Not answered, right fact among the related | Unanswerable questions given related facts |
+|---|---|---|
+| qa-mini | 8 of 8 | 5 of 25 |
+| qa-heldout | 5 of 10 | 3 of 25 |
+
+So the right fact reached the caller, as an answer or as a related fact, for 25 of 25 and
+20 of 25 answerable questions. The other 5 held-out misses: 2 questions never retrieved (see
+above) and 3 whose right fact scored below the floor.
 
 ## Resources
 

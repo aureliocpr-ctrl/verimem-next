@@ -5,3 +5,5 @@ Produced by `verimem eval-ask datasets/qa-mini.json --markdown docs/eval/qa-mini
 | Questions (answerable) | Answered with the right fact | Wrong abstentions | Wrong fact | Retrieval misses | Right abstentions | False answers | AUROC answerable vs not |
 |---|---|---|---|---|---|---|---|
 | 50 (25) | 17 / 25 | 8 | 0 | 0 | 25 / 25 | 0 | 0.971 |
+
+Not answered but handed over among the related facts: 8 of the 8 answerable questions not answered. Unanswerable questions that got related facts: 5 of 25.

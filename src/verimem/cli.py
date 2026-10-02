@@ -107,14 +107,20 @@ def cmd_recall(args: argparse.Namespace) -> int:
     return 0
 
 
+def answer_text(a: Any) -> str:
+    """Human-readable `ask` result: the answers, or the abstention, then related facts."""
+    lines = ([f"not in memory: {a.reason}"] if a.abstained
+             else [_fact_line(r.fact, r.score) for r in a.facts])
+    if a.related:
+        lines.append("related (verified, but not confirmed as an answer):")
+        lines += [_fact_line(r.fact, r.score) for r in a.related]
+    return "\n".join(lines)
+
+
 def cmd_ask(args: argparse.Namespace) -> int:
     with _memory(args) as m:
         a = m.ask(args.question, k=args.k)
-        if a.abstained:
-            human = f"not in memory: {a.reason}"
-        else:
-            human = "\n".join(_fact_line(r.fact, r.score) for r in a.facts)
-        _emit(args, a.to_dict(), human)
+        _emit(args, a.to_dict(), answer_text(a))
     return 0
 
 
@@ -221,7 +227,9 @@ def cmd_eval_ask(args: argparse.Namespace) -> int:
              f"{rep.answerable}, wrong abstentions {rep.wrong_abstentions}, wrong fact "
              f"{rep.wrong_fact}, retrieval misses {rep.retrieval_misses}\n  right abstentions "
              f"{rep.right_abstentions}/{rep.questions - rep.answerable}, false answers "
-             f"{rep.false_answers}\n  AUROC answerable vs not {rep.auroc:.3f}")
+             f"{rep.false_answers}\n  right fact among related when not answered "
+             f"{rep.right_in_related}, unanswerable with related facts "
+             f"{rep.unanswerable_with_related}\n  AUROC answerable vs not {rep.auroc:.3f}")
     _emit(args, rep.to_dict(), human)
     return 0
 

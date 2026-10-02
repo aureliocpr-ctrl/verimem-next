@@ -172,7 +172,9 @@ class Recalled:
 
 @dataclass(frozen=True)
 class Answer:
-    """The result of `Memory.ask`: relevant verified facts, or an explicit abstention."""
+    """The result of `Memory.ask`: verified facts that answer the question, or an explicit
+    abstention. `related` holds verified facts the relevance check could not confirm as
+    answers: true, but the caller decides whether they answer."""
 
     question: str
     facts: tuple[Recalled, ...]
@@ -180,6 +182,7 @@ class Answer:
     reason: str
     considered: int = 0
     candidates: tuple[tuple[str, float], ...] = field(default=())  # (fact id, relevance)
+    related: tuple[Recalled, ...] = field(default=())
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -188,4 +191,5 @@ class Answer:
             "reason": self.reason,
             "considered": self.considered,
             "facts": [r.to_dict() for r in self.facts],
+            "related": [r.to_dict() for r in self.related],
         }

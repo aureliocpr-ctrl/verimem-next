@@ -267,14 +267,17 @@ class Memory:
             return Answer(question, (), True, f"cannot check relevance: {e}",
                           considered=len(facts))
         ranked = sorted(zip(facts, scores, strict=True), key=lambda x: x[1], reverse=True)
-        th = self.policy.relevance_threshold
+        th, floor = self.policy.relevance_threshold, self.policy.relevance_related_threshold
         kept = tuple(Recalled(f, s) for f, s in ranked if s >= th)[:k]
+        related = tuple(Recalled(f, s) for f, s in ranked if floor <= s < th)[:k]
         candidates = tuple((f.id, s) for f, s in ranked)
+        more = f"; {len(related)} related fact(s) may help" if related else ""
         if not kept:
             return Answer(question, (), True, "no verified fact answers the question "
-                          f"(best relevance p={ranked[0][1]:.2f})", len(facts), candidates)
-        return Answer(question, kept, False, f"{len(kept)} verified fact(s) answer the question",
-                      len(facts), candidates)
+                          f"(best relevance p={ranked[0][1]:.2f}){more}", len(facts), candidates,
+                          related)
+        return Answer(question, kept, False, f"{len(kept)} verified fact(s) answer the "
+                      f"question{more}", len(facts), candidates, related)
 
     def history(self, subject: str) -> list[Fact]:
         rows = self.store.facts_where("f.subject = ?", (subject,), order="f.valid_from, f.rowid")

@@ -18,7 +18,8 @@ new command line and new MCP tools (the old `hippo_*` tools are gone). The reaso
   subject; human review; `forget` that removes the text from the database file; an audit hash
   chain that stores keyed hashes, never text.
 - **Reads**: `recall` (SQLite FTS5, English stemming) and `ask`, which answers from verified
-  facts or abstains with the reason.
+  facts or abstains with the reason, and hands over the verified facts it found related but
+  could not confirm as answers.
 - **Evaluation**: `verimem eval`, `eval-ask` and `calibrate`; thresholds chosen on half the
   pairs and measured on the other half; Markdown reports that record the command, the judge
   and the policy.
