@@ -15,20 +15,22 @@ new command line and new MCP tools (the old `hippo_*` tools are gone). The reaso
   `MoritzLaurer/bge-m3-zeroshot-v2.0-c` (MIT), loaded from the local cache only.
 - **Memory**: one write path; statuses `verified`, `unverified`, `quarantined`, `rejected`,
   `superseded`, `forgotten`, decided by one function; trust by source author; supersession by
-  subject; human review; `forget` that removes the text from the database file; an audit hash
-  chain that stores keyed hashes, never text.
+  subject; human review; `forget` that removes the text from the database file, the source
+  when no other fact uses it, and the key of the fact's hashes in the audit chain, so nothing
+  left in the file can confirm a guess of what the fact said; an audit hash chain that stores
+  keyed hashes, never text.
 - **Reads**: `recall` (SQLite FTS5, English stemming) and `ask`, which answers from verified
   facts or abstains with the reason, and hands over the verified facts it found related but
   could not confirm as answers.
 - **Evaluation**: `verimem eval`, `eval-ask` and `calibrate`; thresholds chosen on half the
   pairs and measured on the other half; Markdown reports that record the command, the judge
   and the policy.
-- **Memory reliability report**: `verimem audit` (Markdown in English or Italian, JSON, and a
-  review sheet) and `verimem audit-review` (an estimate checked by a person, with a 95%
+- **Memory reliability report**: `verimem audit` (Markdown in English or Italian, a
+  self-contained HTML page, JSON, and a review sheet) and `verimem audit-review` (an estimate checked by a person, with a 95%
   interval).
 - **Interfaces**: a command line with 17 commands and an MCP server on stdio; the tool that
   approves facts is off unless `--allow-review`.
-- **Data and documents**: regression cases, TruthfulQA pairs, two QA sets,
+- **Data and documents**: regression cases, TruthfulQA pairs, three QA sets,
   [`docs/EVAL.md`](docs/EVAL.md), design notes and nine ADRs.
 
 ### Known limitations

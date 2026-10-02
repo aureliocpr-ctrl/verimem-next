@@ -14,7 +14,7 @@ from typing import Any
 
 from .text import content_tokens, words
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -47,7 +47,9 @@ CREATE TABLE IF NOT EXISTS facts (
     superseded_by TEXT,
     superseded_at TEXT,
     reviewed_by   TEXT,
-    meta          TEXT NOT NULL DEFAULT '{}'
+    meta          TEXT NOT NULL DEFAULT '{}',
+    hash_key      TEXT NOT NULL DEFAULT ''  -- keys this fact's hashes in the audit chain;
+                                            -- wiped by forget
 );
 CREATE INDEX IF NOT EXISTS facts_status  ON facts(status);
 CREATE INDEX IF NOT EXISTS facts_subject ON facts(subject);
@@ -82,7 +84,7 @@ CREATE TABLE IF NOT EXISTS events (
 FACT_COLUMNS = ("id", "text", "norm", "subject", "status", "reason", "label", "support",
                 "verdict",
                 "source_id", "written_by", "created_at", "valid_from", "superseded_by",
-                "superseded_at", "reviewed_by", "meta")
+                "superseded_at", "reviewed_by", "meta", "hash_key")
 
 
 def new_id() -> str:
@@ -130,8 +132,9 @@ class Store:
                       (secrets.token_hex(32),))
         version = int(self.meta("schema_version") or 0)
         if version != SCHEMA_VERSION:
-            raise RuntimeError(f"store schema v{version} is not supported (expected "
-                               f"v{SCHEMA_VERSION}); upgrade verimem or migrate the store")
+            self._conn.close()
+            raise RuntimeError(f"{self.path}: store schema v{version}, this version of verimem "
+                               f"reads v{SCHEMA_VERSION}")
 
     # ------------------------------------------------------------ plumbing
     @contextmanager

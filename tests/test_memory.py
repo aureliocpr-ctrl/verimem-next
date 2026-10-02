@@ -1,4 +1,6 @@
+import sqlite3
 from collections.abc import Sequence
+from contextlib import closing
 
 import pytest
 
@@ -207,3 +209,12 @@ def test_store_survives_reopening(tmp_path):
     with make_memory(path=path) as m:
         assert m.get(r.fact_id).status is Status.VERIFIED
         assert m.stats()["audit_chain_ok"] is True
+
+
+def test_a_store_with_another_schema_is_refused(tmp_path):
+    path = tmp_path / "mem.db"
+    make_memory(path=path).close()
+    with closing(sqlite3.connect(path)) as db, db:
+        db.execute("UPDATE meta SET value = '1' WHERE key = 'schema_version'")
+    with pytest.raises(RuntimeError, match=r"mem\.db: store schema v1, this version"):
+        make_memory(path=path)

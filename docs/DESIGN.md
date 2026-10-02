@@ -58,7 +58,10 @@ to audit an existing memory (the "memory reliability report").
 6. **Numbers come from commands.** Every metric in README or docs is produced by
    `verimem eval` and committed with the command that produced it.
 7. **Deletion deletes.** `forget` removes the fact text and, when no other fact uses it, the
-   source text. The audit log stores hashes, never raw text, so it survives deletion intact.
+   source. The audit log stores hashes, never raw text, so it survives deletion intact. A
+   fact's hashes are keyed with its own key, which `forget` destroys, and the judge's score
+   is not logged: nothing left in the file can confirm a guess of what the fact, its source
+   or the reason for forgetting it said.
 
 ## 4. Architecture
 
@@ -132,9 +135,10 @@ conditions to change it.
   of author, origin and normalised text, so each fact keeps the provenance of its own write
 - `facts(id, text, norm, subject, status, reason, label, support, verdict JSON (with the
   evidence), source_id, written_by, created_at, valid_from, superseded_by, superseded_at,
-  reviewed_by, meta)` + FTS5 index on `text` (Porter stemming, diacritics removed)
+  reviewed_by, meta, hash_key)` + FTS5 index on `text` (Porter stemming, diacritics
+  removed); `hash_key` keys the fact's hashes in the audit chain and is wiped by `forget`
 - `events(seq, ts, kind, fact_id, payload JSON, prev_hash, hash)` — the audit chain
-- `meta(key, value)` — schema version, store id, the key for the hashes
+- `meta(key, value)` — schema version, store id, the key for source ids
 
 ### 6.2 Statuses
 
@@ -149,14 +153,16 @@ conditions to change it.
 
 ### 6.3 Write path — `remember(claim, source=..., author=..., subject=...)`
 
-1. Validate input; store the source (one row per author, origin and text).
+1. Validate input.
 2. Source trust: sources whose author is not trusted for verification (by default `web`
    and `tool`) can never produce `verified`; the fact is stored `unverified`.
 3. Verify with the verifier; map the label to a status.
 4. If verified and a `subject` is given, earlier verified facts on that subject are
    superseded when the new source is not older.
-5. Insert fact, FTS row and audit event in one transaction. A verified fact identical to
-   one already verified on the same subject is not stored twice (`duplicate_of`).
+5. Insert source (one row per author, origin and text), fact, FTS row and audit event in
+   one transaction. A verified fact identical to one already verified on the same subject is
+   not stored twice (`duplicate_of`), and neither is its source: the known fact keeps its
+   own evidence, and forgetting it leaves nothing behind.
 
 ### 6.4 Human review
 

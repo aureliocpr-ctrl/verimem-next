@@ -39,7 +39,8 @@ does not contain. After the one-time model download, nothing leaves your machine
 - **Audit trail.** Every write, review and deletion is appended to a hash chain that stores
   keyed hashes, never text. `verimem chain verify` finds the first tampered event.
 - **Real deletion.** `forget` removes the text from the database file, not only from the
-  index.
+  index, and destroys the key of the fact's hashes in the audit chain: nothing left in the
+  file can confirm a guess of what the fact said.
 - **Memory reliability report.** `verimem audit` checks memories exported from any memory
   system against their sources and writes a report, plus a sheet for a person to check a
   sample and turn it into an estimate checked by a human.

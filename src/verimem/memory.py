@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import secrets
 import sqlite3
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
@@ -140,32 +141,39 @@ class Memory:
                 # Who wrote it and where it came from are part of a source's identity: the
                 # same words from the web and from the user are two sources, each fact keeps
                 # the provenance of its own write.
-                source_id = self._hash("\x00".join((author, it.origin, normalize_ws(it.source))))
-                Store.put_source(c, source_id=source_id, text=it.source, origin=it.origin,
-                                 author=author, observed_at=observed, created_at=now, meta={})
+                source_id = self._source_id(author, it.origin, it.source)
             norm = normalize_fact(claim)
             if status is Status.VERIFIED:
-                dup = c.execute("SELECT id FROM facts WHERE norm = ? AND status = 'verified' "
-                                "AND subject IS ? LIMIT 1", (norm, it.subject)).fetchone()
+                dup = c.execute("SELECT id, hash_key FROM facts WHERE norm = ? AND "
+                                "status = 'verified' AND subject IS ? LIMIT 1",
+                                (norm, it.subject)).fetchone()
                 if dup:
-                    self.audit.append(c, ts=now, kind="duplicate", fact_id=dup["id"],
-                                      payload={"source": source_id, "claim": self._hash(claim)})
+                    # The known fact keeps its own evidence. The new source is not stored:
+                    # no fact would point to it, so forgetting the fact could not erase it.
+                    key = dup["hash_key"]
+                    self.audit.append(c, ts=now, kind="duplicate", fact_id=dup["id"], payload={
+                        "source": self._seal(key, source_id), "claim": self._seal(key, claim)})
                     return WriteResult(dup["id"], Status.VERIFIED, verdict,
                                        duplicate_of=dup["id"])
-            fact_id = new_id()
+            if source_id is not None:
+                Store.put_source(c, source_id=source_id, text=it.source, origin=it.origin,
+                                 author=author, observed_at=observed, created_at=now, meta={})
+            fact_id, key = new_id(), secrets.token_hex(32)
             valid_from = observed or now
             Store.insert_fact(c, {
                 "id": fact_id, "text": claim, "norm": norm, "subject": it.subject,
                 "status": status.value, "reason": reason, "label": verdict.label.value,
                 "support": verdict.support, "verdict": json.dumps(verdict.to_dict()),
                 "source_id": source_id, "written_by": it.written_by, "created_at": now,
-                "valid_from": valid_from, "meta": json.dumps(it.meta),
+                "valid_from": valid_from, "meta": json.dumps(it.meta), "hash_key": key,
             })
+            # No score in the chain: with the exact claim and source, rerunning the judge
+            # would reproduce it and confirm a guess about a forgotten fact.
             self.audit.append(c, ts=now, kind="write", fact_id=fact_id, payload={
-                "status": status.value, "label": verdict.label.value,
-                "support": round(verdict.support, 6), "judge": verdict.judge,
-                "policy": verdict.policy, "claim": self._hash(claim), "source": source_id,
-                "author": author, "written_by": it.written_by,
+                "status": status.value, "label": verdict.label.value, "judge": verdict.judge,
+                "policy": verdict.policy, "claim": self._seal(key, claim),
+                "source": self._seal(key, source_id), "author": author,
+                "written_by": it.written_by,
             })
             superseded: tuple[str, ...] = ()
             if status is Status.VERIFIED and it.subject:
@@ -220,27 +228,31 @@ class Memory:
         return [self._to_fact(r) for r in rows]
 
     def forget(self, fact_id: str, *, reason: str = "") -> None:
-        """Delete a fact's content for good; the audit chain keeps only a keyed hash."""
+        """Delete a fact's content for good.
+
+        The text goes, the source goes when no other fact uses it, and so does the key of the
+        fact's hashes in the audit chain: the chain stays verifiable, but nothing left in the
+        file can confirm a guess of what the fact, its source or the reason said.
+        """
         fact = self._require(fact_id)
         if fact.status is Status.FORGOTTEN:
             return
-        scrubbed = Verdict(label=fact.label, support=fact.support, contradiction=None,
-                           evidence=None, checks=(), judge=fact.judge, policy=fact.policy,
-                           language="und", reason="forgotten")
+        scrubbed = Verdict(label=fact.label, support=0.0, contradiction=None, evidence=None,
+                           checks=(), judge=fact.judge, policy=fact.policy, language="und",
+                           reason="forgotten")
         now = self._clock()
         with self.store.transaction() as c:
-            Store.update_fact(c, fact_id, text="", norm="", subject=None,
-                              status=Status.FORGOTTEN.value, reason="forgotten on request",
-                              verdict=json.dumps(scrubbed.to_dict()), meta="{}")
-            if fact.source_id:
-                still_used = c.execute(
-                    "SELECT 1 FROM facts WHERE source_id = ? AND status != 'forgotten' LIMIT 1",
-                    (fact.source_id,)).fetchone()
-                if not still_used:
-                    c.execute("UPDATE sources SET text = NULL, origin = '', meta = '{}' "
-                              "WHERE id = ?", (fact.source_id,))
+            key = c.execute("SELECT hash_key FROM facts WHERE id = ?",
+                            (fact_id,)).fetchone()["hash_key"]
             self.audit.append(c, ts=now, kind="forget", fact_id=fact_id, payload={
-                "from": fact.status.value, "reason": self._hash(reason) if reason else None})
+                "from": fact.status.value, "reason": self._seal(key, reason or None)})
+            Store.update_fact(c, fact_id, text="", norm="", subject=None, support=0.0,
+                              status=Status.FORGOTTEN.value, reason="forgotten on request",
+                              verdict=json.dumps(scrubbed.to_dict()), meta="{}",
+                              source_id=None, hash_key="")
+            if fact.source_id and not c.execute("SELECT 1 FROM facts WHERE source_id = ? "
+                                                "LIMIT 1", (fact.source_id,)).fetchone():
+                c.execute("DELETE FROM sources WHERE id = ?", (fact.source_id,))
         self.store.purge()
 
     # ------------------------------------------------------------ read path
@@ -299,8 +311,16 @@ class Memory:
         }
 
     # ------------------------------------------------------------ helpers
-    def _hash(self, text: str) -> str:
-        return hmac.new(self._key, text.encode("utf-8"), hashlib.sha256).hexdigest()
+    def _source_id(self, author: str, origin: str, text: str) -> str:
+        material = "\x00".join((author, origin, normalize_ws(text)))
+        return hmac.new(self._key, material.encode("utf-8"), hashlib.sha256).hexdigest()
+
+    @staticmethod
+    def _seal(key: str, value: str | None) -> str | None:
+        """A hash for the audit chain, keyed with the fact's own key (wiped by `forget`)."""
+        if value is None:
+            return None
+        return hmac.new(bytes.fromhex(key), value.encode("utf-8"), hashlib.sha256).hexdigest()
 
     def _judge_is_model(self) -> bool:
         try:
