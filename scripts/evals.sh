@@ -10,6 +10,7 @@ verimem eval datasets/review-cases.csv --markdown docs/eval/review-cases.md
 verimem eval datasets/review-cases.csv --judge lexical --markdown docs/eval/review-cases-lexical.md
 verimem eval datasets/truthfulqa-pairs.jsonl --markdown docs/eval/truthfulqa.md
 verimem eval datasets/truthfulqa-pairs.jsonl --judge lexical --markdown docs/eval/truthfulqa-lexical.md
+verimem eval datasets/crosslingual-cases.csv --markdown docs/eval/crosslingual-cases.md
 verimem eval-ask datasets/qa-mini.json --markdown docs/eval/qa-mini.md
 verimem eval-ask datasets/qa-heldout.json --markdown docs/eval/qa-heldout.md
 verimem eval examples/audit/pairs.jsonl --markdown docs/eval/example-pairs.md

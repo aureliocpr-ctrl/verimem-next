@@ -1,0 +1,19 @@
+id,lang,source,claim,label
+x01,it-en,Utente: mi sono trasferito da Roma a Milano nel 2021 per lavorare in banca.,The user moved from Rome to Milan in 2021.,S
+x02,it-en,Utente: mi sono trasferito da Roma a Milano nel 2021 per lavorare in banca.,The user works at a bank.,S
+x03,it-en,Utente: mi sono trasferito da Roma a Milano nel 2021 per lavorare in banca.,The user moved to Milan in 2019.,C
+x04,it-en,Utente: mi sono trasferito da Roma a Milano nel 2021 per lavorare in banca.,The user is a financial analyst.,N
+x05,it-en,Cliente: il contratto scade a fine marzo e vorremmo rinnovarlo con un canone più basso.,The customer wants to renew the contract at a lower fee.,S
+x06,it-en,Cliente: il contratto scade a fine marzo e vorremmo rinnovarlo con un canone più basso.,The contract expires at the end of March.,S
+x07,it-en,Cliente: il contratto scade a fine marzo e vorremmo rinnovarlo con un canone più basso.,The customer wants to cancel the contract.,C
+x08,it-en,Cliente: il contratto scade a fine marzo e vorremmo rinnovarlo con un canone più basso.,The customer asked for a 15% discount.,N
+x09,it-en,"Marta: la demo è spostata a giovedì alle 15, nella sala grande.",The demo was moved to Thursday at 3 pm.,S
+x10,it-en,"Marta: la demo è spostata a giovedì alle 15, nella sala grande.",The demo will take place in the small room.,C
+x11,it-en,Utente: sono allergico alle arachidi e non mangio carne di maiale.,The user is allergic to peanuts.,S
+x12,it-en,Utente: sono allergico alle arachidi e non mangio carne di maiale.,The user is vegetarian.,N
+x13,en-it,User: I'm flying to Lisbon on the 14th and coming back on the 18th.,L'utente torna da Lisbona il 18.,S
+x14,en-it,User: I'm flying to Lisbon on the 14th and coming back on the 18th.,L'utente parte per Lisbona il 15.,C
+x15,en-it,User: I'm flying to Lisbon on the 14th and coming back on the 18th.,L'utente va a Lisbona per una conferenza.,N
+x16,en-it,Anna leads the data platform team and reports to the CTO.,Anna guida il team della piattaforma dati.,S
+x17,en-it,Anna leads the data platform team and reports to the CTO.,Anna è la CTO.,C
+x18,en-it,Anna leads the data platform team and reports to the CTO.,Anna è stata assunta nel 2020.,N

@@ -10,6 +10,7 @@ Labels: `S` = the source supports the claim, `N` = plausible but not stated by t
 | `qa-mini.json` | 20 facts, 50 questions (25 answerable), IT/EN | Claude (2026-10-02) | choosing the relevance threshold of `Memory.ask` |
 | `qa-heldout.json` | 20 facts, 50 questions (25 answerable), IT/EN | Claude (2026-10-02), before any change it measures | checking that a change to `ask` designed on `qa-mini.json` generalises |
 | `qa-heldout-2.json` | 20 facts, 50 questions (25 answerable), IT/EN | Claude (2026-10-02), before the next change it measures | the same check for the next change; `qa-heldout.json` was looked at in detail and no longer counts as held out |
+| `crosslingual-cases.csv` | 18 (8 S, 5 N, 5 C): Italian sources with English claims and the reverse | Claude (2026-10-02) | memories extracted in another language than the conversation, as LLM extraction often does |
 | `truthfulqa-pairs.jsonl` | 582 (282 S, 300 N), EN | TruthfulQA authors, reshaped into pairs (see below) | an external check written by people, not by the model under test |
 
 `review-cases.csv` and the three QA sets were written by the same model that built the
