@@ -115,6 +115,16 @@ def test_recall_matches_english_inflections():
     assert [h.fact.text for h in m.recall("shipping on a 60 euro order")] == [fact]
 
 
+def test_each_fact_keeps_the_author_and_origin_of_its_own_write():
+    m = make_memory()
+    text = "Maria moved from Rome to Milan in 2021."
+    a = m.remember("Maria moved to Milan in 2021.", source=text, author="web", origin="page:1")
+    b = m.remember("Maria moved from Rome.", source=text, author="user", origin="chat:7")
+    fa, fb = m.get(a.fact_id), m.get(b.fact_id)
+    assert (fa.status, fa.source_author, fa.source_origin) == (Status.UNVERIFIED, "web", "page:1")
+    assert (fb.status, fb.source_author, fb.source_origin) == (Status.VERIFIED, "user", "chat:7")
+
+
 def test_ask_answers_with_relevant_facts_or_abstains():
     rel = FakeRelevance({"move": "Milan"})
     m = make_memory(relevance=rel)

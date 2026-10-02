@@ -137,7 +137,10 @@ class Memory:
         with self.store.transaction() as c:
             source_id = None
             if it.source and it.source.strip():
-                source_id = self._hash(normalize_ws(it.source))
+                # Who wrote it and where it came from are part of a source's identity: the
+                # same words from the web and from the user are two sources, each fact keeps
+                # the provenance of its own write.
+                source_id = self._hash("\x00".join((author, it.origin, normalize_ws(it.source))))
                 Store.put_source(c, source_id=source_id, text=it.source, origin=it.origin,
                                  author=author, observed_at=observed, created_at=now, meta={})
             norm = normalize_fact(claim)

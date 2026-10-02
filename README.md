@@ -109,6 +109,26 @@ What is the name of the user's dog?
 The second question shows the main weakness: `ask` is strict and sometimes abstains
 although the answer is stored (see [Limits](#limits)).
 
+### In an agent
+
+The usual loop, sketched (`extract_memories` stands for your own LLM extraction step):
+
+```python
+memory = Memory("memory.db")
+
+# After a user turn: store what the extractor proposes, with the turn as its source.
+for claim in extract_memories(user_message):
+    memory.remember(claim, source=user_message, author="user", origin=f"chat:{chat_id}")
+
+# Before answering: verified facts with their evidence, and an explicit "not in memory".
+answer = memory.ask(question)
+facts = [(r.fact.text, r.fact.evidence.text) for r in answer.facts]
+maybe = [r.fact.text for r in answer.related]  # verified, but not confirmed as answers
+```
+
+Text the agent read on the web or got from a tool goes in with `author="web"` or
+`author="tool"`: it is kept, but never verified (see `examples/poisoning.py`).
+
 ### Command line
 
 ```

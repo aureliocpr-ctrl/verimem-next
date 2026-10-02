@@ -58,12 +58,17 @@ Legenda: `[x]` fatto · `[ ]` da fare · `[~]` in corso · `[!]` bloccato (motiv
 - [x] **Misura dell'astensione**: `verimem eval-ask datasets/qa-mini.json` (17/25 risposte
   giuste, 0 false) e `datasets/qa-heldout.json` (15/25, 2 false). Soglia 0,4 da
   `scripts/research/ask_threshold.py`.
+- [x] **Fatti correlati.** Quando `ask` non conferma una risposta, restituisce comunque i
+  fatti verificati che ha trovato (`related`, con la pertinenza), e chi chiama decide: il
+  fatto giusto c'era per 8 domande su 8 e 5 su 10 di quelle non risposte.
+  `pytest tests/test_memory.py`, `verimem eval-ask`.
 - [ ] **Pertinenza migliore.** `ask` si astiene su 8-10 domande su 25 a cui la memoria sa
   rispondere (es. "Who leads the data platform team?" contro "Anna leads the data platform
   team.", 0,11). Una regola lessicale è stata provata e ritirata (commit cecfccb/09426c3,
-  `docs/EVAL.md`). Strade: un modello di riordino con licenza pulita, un giudice LLM
-  opzionale (ADR-0008). Prima di ogni prova: un terzo insieme di domande scritto prima.
-  Fatto quando: su un insieme mai visto, più risposte giuste senza più risposte false.
+  `docs/EVAL.md`). Prossima prova: trasformare la domanda in un'affermazione esistenziale
+  ("Who leads the team?" → "Someone leads the team") e chiedere al giudice se il fatto la
+  implica. L'insieme per giudicarla, `datasets/qa-heldout-2.json`, è già in commit.
+  Fatto quando: su `qa-heldout-2.json`, più risposte giuste senza più risposte false.
 
 ## Fase 4 — Valutazione e calibrazione
 
@@ -76,7 +81,8 @@ Legenda: `[x]` fatto · `[ ]` da fare · `[~]` in corso · `[!]` bloccato (motiv
 
 ## Fase 5 — Il rapporto di affidabilità della memoria (il prodotto che si vende per primo)
 
-- [x] **report.py**: JSON, Markdown (en/it) e `review.csv`. `pytest tests/test_report.py`.
+- [x] **report.py**: JSON, Markdown (en/it), HTML autonomo da stampare in PDF (ogni testo
+  dei dati del cliente è "escapato") e `review.csv`. `pytest tests/test_report.py`.
 - [x] **CLI** `verimem audit coppie.jsonl --out cartella/ --lang it`.
 - [x] **Ciclo di revisione**: `review.csv` in ordine casuale per gruppo, colonna
   `stated_by_source`; `verimem audit-review cartella/` dà la stima controllata da una
