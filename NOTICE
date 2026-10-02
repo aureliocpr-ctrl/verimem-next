@@ -1,0 +1,7 @@
+verimem
+Copyright 2026 Aurelio Capriello
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Model judges are downloaded separately and are covered by their own licenses. The default
+judge, MoritzLaurer/bge-m3-zeroshot-v2.0-c, is published under the MIT license.

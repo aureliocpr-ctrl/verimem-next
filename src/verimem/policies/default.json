@@ -1,0 +1,18 @@
+{
+  "version": "0.9.0-provisional",
+  "judge": "hf:MoritzLaurer/bge-m3-zeroshot-v2.0-c",
+  "thresholds": {"support": 0.5, "uncertain": 0.2, "contradiction": 0.8},
+  "per_language": {},
+  "numeric_check": true,
+  "context_check": true,
+  "max_windows": 12,
+  "window_sizes": [1, 2],
+  "full_source_max_chars": 1500,
+  "trusted_authors": ["user", "document", "system"],
+  "relevance_threshold": 0.5,
+  "relevance_templates": {
+    "en": "This text answers the question: {question}",
+    "it": "Questo testo risponde alla domanda: {question}"
+  },
+  "calibration": null
+}

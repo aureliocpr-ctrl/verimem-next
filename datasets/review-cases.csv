@@ -1,0 +1,41 @@
+id,lang,source,claim,label
+TRUE0,en,User: I'm flying to Lisbon next week for a conference.,The user will attend a conference in Lisbon.,S
+TRUE1,en,We decided to drop Redis from the stack.,The team decided to remove Redis from the stack.,S
+TRUE2,en,Anna joined the data team in March.,Anna has been part of the data team since March.,S
+TRUE3,en,The incident was resolved by restarting the cache nodes.,Restarting the cache nodes resolved the incident.,S
+TRUE4,en,The team switched from Jira to Linear.,The team now uses Linear instead of Jira.,S
+TRUE5,it,Utente: mi sono trasferito a Bologna.,L'utente vive a Bologna.,S
+TRUE6,it,Il fornitore ha consegnato i pezzi.,I pezzi sono stati consegnati dal fornitore.,S
+TRUE7,it,Giulia ha presentato il progetto al comitato.,Il progetto è stato presentato al comitato da Giulia.,S
+TRUE8,it,Il medico ha prescritto degli esami del sangue.,Sono stati prescritti degli esami del sangue.,S
+TRUE9,it,La riunione di oggi è stata annullata.,La riunione di oggi non si terrà.,S
+TRUE10,en,Maria told us she moved from Rome to Milan in 2021 for a job at a bank.,Maria moved to Milan in 2021.,S
+TRUE11,en,"User: please always answer me in Italian, I find English replies tiring.",The user prefers answers in Italian.,S
+TRUE12,it,Il deploy di venerdì è fallito perché il certificato TLS era scaduto.,Il deploy di venerdì è fallito a causa di un certificato scaduto.,S
+TRUE13,en,We agreed to use PostgreSQL 16 for the billing service; SQLite stays for local tests.,The billing service will use PostgreSQL 16.,S
+TRUE14,en,The demo was planned for Thursday. Update from Anna: it has been moved to Friday.,The demo is on Friday.,S
+UNSUP0,en,User: I'm flying to Lisbon next week for a conference.,The user is presenting a talk at the conference in Lisbon.,N
+UNSUP1,en,We decided to drop Redis from the stack.,Redis was dropped because of its licensing change.,N
+UNSUP2,en,Anna joined the data team in March.,Anna is a senior data engineer.,N
+UNSUP3,en,The client asked us to postpone the launch.,The client postponed the launch because of legal concerns.,N
+UNSUP4,en,User: my daughter started school this year.,The user's daughter attends a private school.,N
+UNSUP5,en,The incident was resolved by restarting the cache nodes.,The incident was caused by a memory leak in the cache nodes.,N
+UNSUP6,en,Marco reviewed the pull request.,Marco approved the pull request.,N
+UNSUP7,en,The team switched from Jira to Linear.,The team prefers Linear because it is faster.,N
+UNSUP8,it,Utente: mi sono trasferito a Bologna.,L'utente si è trasferito a Bologna per lavoro.,N
+UNSUP9,it,Il fornitore ha consegnato i pezzi.,Il fornitore ha consegnato i pezzi in ritardo.,N
+UNSUP10,it,Giulia ha presentato il progetto al comitato.,Il comitato ha approvato il progetto di Giulia.,N
+UNSUP11,it,Abbiamo sostituito il vecchio server di posta.,Il vecchio server di posta era stato compromesso.,N
+UNSUP12,it,Utente: sto imparando lo spagnolo.,L'utente sta imparando lo spagnolo per trasferirsi a Madrid.,N
+UNSUP13,it,Il medico ha prescritto degli esami del sangue.,Il medico sospetta un'anemia.,N
+UNSUP14,it,La riunione di oggi è stata annullata.,La riunione di oggi è stata annullata perché il cliente era malato.,N
+UNSUP15,en,Maria told us she moved from Rome to Milan in 2021 for a job at a bank.,Maria works as a financial analyst.,N
+UNSUP16,en,User: I have a dog called Toby.,The user's dog Toby is a golden retriever.,N
+UNSUP17,it,Il team ha rilasciato la versione 2.3 dell'app mobile.,La versione 2.3 dell'app mobile ha ricevuto recensioni positive.,N
+UNSUP18,en,The board approved the budget for next year.,The board approved the budget unanimously.,N
+CONTRA0,en,The patient is not allergic to penicillin.,The patient is allergic to penicillin.,C
+CONTRA1,it,Il cliente non ha rinnovato il contratto a settembre.,Il cliente ha rinnovato il contratto a settembre.,C
+CONTRA2,en,The patient is allergic to penicillin.,The patient is allergic to ibuprofen.,C
+CONTRA3,en,Luca is the tech lead of the payments team; Sara leads the search team.,Sara is the tech lead of the payments team.,C
+CONTRA4,it,La riunione con il fornitore è fissata a Torino.,La riunione con il fornitore è fissata a Bologna.,C
+CONTRA5,en,The demo was planned for Thursday. Update from Anna: it has been moved to Friday.,The demo is on Thursday.,C

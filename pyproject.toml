@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verimem"
+version = "0.9.0.dev0"
+description = "Verified memory for AI agents: nothing becomes a fact unless its source says it, every memory carries its evidence, and when memory doesn't know, it says so."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.10"
+authors = [{ name = "Aurelio Capriello" }]
+keywords = ["ai agents", "memory", "llm", "hallucination", "grounding", "nli", "mcp", "audit"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.optional-dependencies]
+nli = ["torch>=2.1", "transformers>=4.40"]
+mcp = ["mcp>=1.2"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+verimem = "verimem.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/aureliocpr-ctrl/verimem-next"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+verimem = ["py.typed", "policies/*.json"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "BLE", "UP", "SIM", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003", "SIM905"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["model: needs a real model download (set VERIMEM_TEST_MODELS=1)"]
+filterwarnings = ["error", "ignore::DeprecationWarning:torch.*", "ignore::FutureWarning", "ignore::UserWarning:transformers.*"]
