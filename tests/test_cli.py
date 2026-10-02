@@ -4,6 +4,7 @@ The lexical judge can never verify (ADR-0004), which these tests also show."""
 import csv
 import json
 import re
+import shlex
 
 import pytest
 
@@ -78,12 +79,15 @@ def test_eval_command(tmp_path, capsys):
 
 
 def test_eval_report_records_the_command_that_produced_it(tmp_path, capsys):
-    data = tmp_path / "d.csv"
+    folder = tmp_path / "eval out"  # a space, like a Windows backslash, needs quoting
+    folder.mkdir()
+    data = folder / "d.csv"
     data.write_text("source,claim,label\nThe sky is blue.,The sky is blue.,S\n", encoding="utf-8")
-    md = tmp_path / "e.md"
+    md = folder / "e.md"
     run(capsys, "eval", str(data), "--judge", "lexical", "--markdown", str(md))
     text = md.read_text("utf-8")
-    assert f"`verimem eval {data} --judge lexical --markdown {md}`" in text
+    typed = ["eval", str(data), "--judge", "lexical", "--markdown", str(md)]
+    assert f"`verimem {shlex.join(typed)}`" in text  # a command one can paste and rerun
     assert re.search(r"\bnan\b", text) is None  # only S pairs: AUROC is n/a, not nan
 
 
@@ -126,11 +130,12 @@ def test_eval_ask_writes_markdown_with_its_provenance(tmp_path, capsys):
         "questions": [{"q": "Where does Maria live?", "answer": ["f1"]},
                       {"q": "What is the name of Maria's dog?", "answer": []}]}),
         encoding="utf-8")
-    md = tmp_path / "ask.md"
+    md = tmp_path / "ask out.md"
     code, _ = run(capsys, "eval-ask", str(qa), "--judge", "lexical", "--markdown", str(md))
     text = md.read_text("utf-8")
     assert code == 0
-    assert f"`verimem eval-ask {qa} --judge lexical --markdown {md}`" in text
+    typed = ["eval-ask", str(qa), "--judge", "lexical", "--markdown", str(md)]
+    assert f"`verimem {shlex.join(typed)}`" in text
     assert "`lexical:v1`" in text and "| 2 (1) |" in text
 
 
