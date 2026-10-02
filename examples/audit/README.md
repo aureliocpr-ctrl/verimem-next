@@ -22,7 +22,7 @@ the report distinguishes: faithful memories, details the source never states (a 
 a percentage, a reason), numbers that differ from the source, statements the source
 contradicts, and memories whose source was not kept.
 
-**The share of unsupported memories in this example (50%) says nothing about any real
+**The share of unsupported memories in this example (53%) says nothing about any real
 system.** It reflects how the example was built.
 
 Each row also carries the label Claude intended (`label`: `S` stated, `N` not stated, `C`
@@ -49,18 +49,20 @@ has something to show.
 compares the verdicts with the labels: 12 of 14 `S` verified, 1 of 8 `N` and 0 of 8 `C`
 verified. The three disagreements:
 
-- **crm-20**, "Davide è il responsabile IT di Logistica Po", verified (p=0.88). The source
-  says Davide works in IT ("Davide (IT di Logistica Po)"); "head of IT" is added. This is a
-  real error of the judge, of exactly the kind the product exists to catch, and the reason
-  the report asks a person to check a sample.
+- **crm-20**, "Davide è il responsabile IT di Logistica Delta", verified (p=0.87). The
+  source says Davide works in IT ("Davide (IT di Logistica Delta)"); "head of IT" is added.
+  This is a real error of the judge, of exactly the kind the product exists to catch, and
+  the reason the report asks a person to check a sample.
 - **pa-05**, "The user does not want meetings scheduled before 9:30 on weekdays", left
   `uncertain` (p=0.24). The source says "Don't schedule anything before 9:30 on weekdays":
   a paraphrase the judge missed.
-- **crm-05**, "Termoidraulica Ferri ha 12 tecnici sul campo", left `uncertain` (p=0.28).
+- **crm-05**, "Termoidraulica Alfa ha 12 tecnici sul campo", not supported (p=0.02).
   Labelled `S` when written, but the source chunk only says "Paolo Ferri: … abbiamo 12
   tecnici"; the company's name is in a different chunk of the same call. The verifier is
   right that this chunk does not say it. When a memory combines several parts of a
-  conversation, pass the whole conversation as its source.
+  conversation, pass the whole conversation as its source. (With the first, real-sounding
+  company names of this example the same memory scored 0.28 and stayed `uncertain`: names
+  move the judge's scores.)
 
 ## Running it on your own memories
 

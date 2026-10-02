@@ -4,9 +4,9 @@
 
 - **32** memories checked against the source they were extracted from.
 - **13** supported by their source.
-- **15** not supported by their source: **50% (33%-67%)** of the 30 that could be judged.
+- **16** not supported by their source: **53% (36%-70%)** of the 30 that could be judged.
 - **7** add a number, amount or date the source does not contain.
-- **2** weakly supported (left for review, not counted as errors).
+- **1** weakly supported (left for review, not counted as errors).
 - **2** had no source and could not be checked.
 
 ## What this means
@@ -15,41 +15,41 @@ A memory is *not supported* when the text it came from does not state it. Such m
 
 ## Examples of unsupported memories
 
-- **Il ritardo del tecnico è costato a Termoidraulica Ferri 4.000 euro.**  
+- **Il ritardo del tecnico è costato a Termoidraulica Alfa 4.000 euro.**  
   numbers or dates not in the source: 4.000  
   _closest passage in the source:_ “Paolo Ferri: L'ultima volta il vostro tecnico è arrivato con due giorni di ritardo e abbiamo dovuto fermare un cantiere. Non deve ripetersi.”
 
-- **Ortofrutta Villa ha un budget di 20.000 euro per il modulo magazzino.**  
+- **Ortofrutta Gamma ha un budget di 20.000 euro per il modulo magazzino.**  
   numbers or dates not in the source: 20.000  
-  _closest passage in the source:_ “Nota della chiamata con Marta Villa (Ortofrutta Villa): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere.”
+  _closest passage in the source:_ “Nota della chiamata con Marta Villa (Ortofrutta Gamma): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere. Budget non ancora definito.”
 
-- **Ortofrutta Villa ha già scelto il nostro modulo magazzino.**  
+- **Ortofrutta Gamma ha già scelto il nostro modulo magazzino.**  
   the source does not say it (best support p=0.00)  
-  _closest passage in the source:_ “Nota della chiamata con Marta Villa (Ortofrutta Villa): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere.”
+  _closest passage in the source:_ “Nota della chiamata con Marta Villa (Ortofrutta Gamma): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere.”
 
 - **The user is strictly vegan.**  
   the source does not say it (best support p=0.00)  
   _closest passage in the source:_ “User: I switched to a vegetarian diet last month, but I still eat fish now and then.”
 
-- **La riunione per la firma con lo Studio Sala & Partners si terrà online.**  
+- **La riunione per la firma con lo Studio Zefiro & Partners si terrà online.**  
   the source does not say it (best support p=0.00)  
-  _closest passage in the source:_ “Email di Giulia Sala (ufficio legale, Studio Sala & Partners), 14 febbraio: confermo che la riunione per la firma è spostata a giovedì 20 febbraio alle 15:00, presso la nostra sede di via Solferino.”
+  _closest passage in the source:_ “Email di Giulia Zefiro (ufficio legale, Studio Zefiro & Partners), 14 febbraio: confermo che la riunione per la firma è spostata a giovedì 20 febbraio alle 15:00, presso la nostra sede di via Solferino.”
 
-- **Termoidraulica Ferri chiede uno sconto del 15% sul canone.**  
+- **Termoidraulica Alfa chiede uno sconto del 15% sul canone.**  
   numbers or dates not in the source: 15%  
-  _closest passage in the source:_ “Cliente: Buongiorno, sono Paolo Ferri, responsabile acquisti di Termoidraulica Ferri.”
+  _closest passage in the source:_ “Cliente: Buongiorno, sono Paolo Ferri, responsabile acquisti di Termoidraulica Alfa.”
 
-- **Giulia Sala è la socia fondatrice dello Studio Sala & Partners.**  
-  the source does not say it (best support p=0.00)  
-  _closest passage in the source:_ “Email di Giulia Sala (ufficio legale, Studio Sala & Partners), 14 febbraio: confermo che la riunione per la firma è spostata a giovedì 20 febbraio alle 15:00, presso la nostra sede di via Solferino.”
+- **Termoidraulica Alfa avrà 15 tecnici entro l'estate.**  
+  numbers or dates not in the source: 15  
+  _closest passage in the source:_ “Paolo Ferri: Al momento abbiamo 12 tecnici sul campo e ognuno usa la vostra app sul tablet. Entro l'estate ne assumiamo altri tre.”
 
 - **The user returns from Lisbon on the 19th.**  
   numbers or dates not in the source: 19th  
   _closest passage in the source:_ “User: I'm flying to Lisbon on the 14th for the conference, back on the 18th.”
 
-- **Termoidraulica Ferri vuole disdire il contratto di manutenzione.**  
-  the source does not say it (best support p=0.01)  
-  _closest passage in the source:_ “Vi chiamo perché il contratto di manutenzione scade a fine marzo e vorremmo rinnovarlo, ma con un canone più basso.”
+- **Logistica Delta usa Windows Server 2022.**  
+  numbers or dates not in the source: 2022  
+  _closest passage in the source:_ “Davide (IT di Logistica Delta): il server lo teniamo in casa, niente cloud, è una regola del gruppo.”
 
 - **The user's team is fully remote.**  
   the source does not say it (best support p=0.01)  
@@ -77,4 +77,4 @@ Verdicts come from an automatic judge (hf:MoritzLaurer/bge-m3-zeroshot-v2.0-c@70
 - threshold: 0.4
 - measured: 17/25 answerable questions answered with the right fact, 8 wrong abstentions; 25/25 unanswerable questions abstained, 0 false answers (verimem eval-ask datasets/qa-mini.json)
 
-Generated by verimem 0.9.0.dev0 on 2026-10-02 12:40 UTC.
+Generated by verimem 0.9.0.dev0 on 2026-10-02 12:53 UTC.

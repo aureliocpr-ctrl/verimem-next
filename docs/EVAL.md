@@ -22,7 +22,7 @@ does not, `C` it contradicts it.
 | Dataset | Written by | Pairs S / N / C | AUROC S vs N (95% CI) | Verified at the default policy: S / N / C | s per pair |
 |---|---|---|---|---|---|
 | [`review-cases.csv`](eval/review-cases.md) | Claude | 15 / 19 / 6 | 1.000 (1.00-1.00) | 100% / 0% / 0% | 0.07 |
-| [`examples/audit/pairs.jsonl`](eval/example-pairs.md) | Claude | 14 / 8 / 8 | 0.973 (0.91-1.00) | 86% / 12% / 0% | 0.24 |
+| [`examples/audit/pairs.jsonl`](eval/example-pairs.md) | Claude | 14 / 8 / 8 | 0.973 (0.91-1.00) | 86% / 12% / 0% | 0.28 |
 | [`truthfulqa-pairs.jsonl`](eval/truthfulqa.md) | people (TruthfulQA) | 282 / 300 / 0 | 0.821 (0.79-0.85) | 47% / 3% / n/a | 0.23 |
 | review-cases, [lexical baseline](eval/review-cases-lexical.md) | | | 0.753 (0.59-0.90) | 100% / 79% / 100% | 0.00 |
 | TruthfulQA, [lexical baseline](eval/truthfulqa-lexical.md) | | | 0.472 (0.42-0.52) | 69% / 79% / n/a | 0.00 |
@@ -95,8 +95,8 @@ questions (interviews, support chats) need care until this is handled.
 
 - **Paraphrase misses**: "The user does not want meetings scheduled before 9:30 on weekdays"
   from "Don't schedule anything before 9:30 on weekdays" stays `uncertain` (p=0.24).
-- **Embellished roles**: "Davide è il responsabile IT" from "Davide (IT di Logistica Po)" was
-  verified (p=0.88).
+- **Embellished roles**: "Davide è il responsabile IT" from "Davide (IT di Logistica Delta)"
+  was verified (p=0.87).
 - **Negated quantities**: "…was not signed on July 4. Instead, it was signed on August 2,
   1776" is refused because July 4 is not in the source, although the claim denies it.
 - **Arithmetic is not support**, by design: "15 technicians" from "12 technicians, and we
@@ -155,7 +155,7 @@ agents to fall back on `recall` when `ask` abstains, and to judge relevance them
 | Model download | 1.16 GB (`model.safetensors` 1.14 GB, tokenizer files 0.02 GB) | `verimem warmup` |
 | Loading the judge | 7.4 s, 1.35 GB peak memory | `Verifier.default().warmup()`, `resource.getrusage` |
 | One `verimem check` from a cold start | 8.4 s | `time verimem check …` |
-| Per pair, batched, model loaded | 0.07-0.24 s | `verimem eval` (table above) |
+| Per pair, batched, model loaded | 0.07-0.28 s | `verimem eval` (table above) |
 
 ## Reproduce
 

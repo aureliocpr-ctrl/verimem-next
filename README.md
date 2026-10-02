@@ -182,7 +182,7 @@ refusal in six was a real miss.
 `ask` (two sets of 50 questions written by Claude): it answered 17 and 15 of the 25 questions
 the facts answer, and handed a fact to 0 and 2 of the 25 they do not.
 
-Speed on 4 CPU cores without GPU: 7.4 s to load the judge, then 0.07-0.24 s per claim.
+Speed on 4 CPU cores without GPU: 7.4 s to load the judge, then 0.07-0.28 s per claim.
 
 ## Limits
 
@@ -196,7 +196,7 @@ Speed on 4 CPU cores without GPU: 7.4 s to load the judge, then 0.07-0.24 s per 
   of those 25 questions, so `recall` (keyword search over verified facts) is the fallback,
   and the MCP server tells agents to use it.
 - **The judge makes mistakes.** It accepted "Davide è il responsabile IT" (head of IT) from
-  "Davide (IT di Logistica Po)", and misses some paraphrases. Questions in the source can lend
+  "Davide (IT di Logistica Delta)", and misses some paraphrases. Questions in the source can lend
   a claim support ("Why does the government lie about…?").
 - **Contradictions come out as `not_supported`**, not `contradicted`: the default judge is
   binary.

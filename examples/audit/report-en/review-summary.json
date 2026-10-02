@@ -1,13 +1,13 @@
 {
   "groups": {
     "flagged": {
-      "memories": 15,
-      "reviewed": 15,
+      "memories": 16,
+      "reviewed": 16,
       "not_stated": 15
     },
     "uncertain": {
-      "memories": 2,
-      "reviewed": 2,
+      "memories": 1,
+      "reviewed": 1,
       "not_stated": 0
     },
     "verified": {
