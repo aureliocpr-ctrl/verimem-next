@@ -30,7 +30,10 @@ new command line and new MCP tools (the old `hippo_*` tools are gone). The reaso
   pairs and measured on the other half; Markdown reports that record the command, the judge
   and the policy. `calibrate` aims at a share of true claims lost (`--target-loss`) or caps
   the share of unsupported claims admitted (`--max-admitted`); `eval --pairs-out` writes one
-  line per pair. A claim the quantity check refuses scores 0 in threshold analysis.
+  line per pair. A claim the quantity check refuses is lost whatever the thresholds: it
+  scores 0 in threshold analysis and never moves a calibrated threshold.
+- **Policies**: `default` and `strict` (calibrated on RAGTruth's train split to admit at most
+  5% of unsupported sentences), chosen with `--policy NAME` or a JSON file.
 - **Memory reliability report**: `verimem audit` (Markdown in English or Italian, a
   self-contained HTML page, JSON, and a review sheet) and `verimem audit-review` (an estimate checked by a person, with a 95%
   interval).

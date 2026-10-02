@@ -187,10 +187,15 @@ mistakes and the basis of a review queue.
 ## 7. Policy and calibration
 
 Thresholds are data (`policies/*.json`), versioned, with the calibration provenance
-(dataset, size, target loss, measured rates). `verimem calibrate labelled.csv` produces a
-new policy from a labelled set: the support threshold is chosen on half of the pairs to lose
-a target share of true facts and measured on the other half. Every verdict records the policy
-version that produced it.
+(dataset, size, objective, measured rates). Two policies ship: `default`, and `strict`, whose
+support threshold lets through at most 5% of the unsupported sentences of RAGTruth's train
+split. `verimem calibrate labelled.csv` produces a new policy from a labelled set, with one of
+two objectives: lose about a target share of the true claims the judge decides
+(`--target-loss`, which also sets `uncertain` so that about 2% of them are quarantined), or
+let through at most a share of the unsupported ones (`--max-admitted`, which keeps the base
+policy's `uncertain`, and with it the context check). Claims the quantity check refuses never
+move a threshold, but count as lost. The rates are measured on the half of the pairs the
+threshold was not chosen on. Every verdict records the policy version that produced it.
 
 ## 8. Evaluation as part of the product
 

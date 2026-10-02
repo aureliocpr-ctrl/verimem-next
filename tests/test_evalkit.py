@@ -225,3 +225,36 @@ def test_report_shows_auroc_by_language_when_there_are_several():
     assert "AUROC S vs N by language: en 1.000 (30 pairs), it 1.000 (30 pairs)." in md
     one, _ = evaluate_verifier(v, pairs(), bootstrap_rounds=20)
     assert "by language" not in render_verifier_report(one, dataset="d", command="c")
+
+
+def vetoed_pairs() -> list[Pair]:
+    """pairs(), but 3 of the 30 true claims carry a number their source lacks (10%)."""
+    out = []
+    for p in pairs():
+        i = int(p.id[1:])
+        if p.label == "S" and i < 3:
+            p = Pair(p.source, p.claim + " 77", "S", p.lang, p.id)
+        out.append(p)
+    return out
+
+
+def graded_by_index(premise, hypothesis):
+    i = int(hypothesis.split("alpha")[1].split()[0])
+    return NLIScores(entailment=0.6 + i / 100 if "beta" in hypothesis else 0.1 + i / 200)
+
+
+def test_calibrate_thresholds_ignore_claims_the_quantity_check_refuses():
+    # Those claims are lost whatever the thresholds: counted among the true claims, they
+    # pulled both thresholds to 0 as soon as they were more than the target loss.
+    v = Verifier(judge=FakeJudge(graded_by_index), policy=make_policy())
+    th, prov = calibrate(v, vetoed_pairs())
+    assert 0.6 < th.support < 0.7 and 0.6 <= th.uncertain <= th.support
+    assert prov["held_out_true_lost"] >= 0.1  # the refused ones still count as lost
+
+
+def test_capping_admissions_keeps_the_base_quarantine_threshold():
+    # The cap decides what is verified; what counts as quarantined, and the context check
+    # tied to it, stay as in the base policy.
+    v = Verifier(judge=FakeJudge(graded_by_index), policy=make_policy())
+    th, _ = calibrate(v, vetoed_pairs(), max_admitted=0.1)
+    assert th.uncertain == min(th.support, 0.2)

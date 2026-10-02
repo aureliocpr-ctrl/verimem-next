@@ -88,6 +88,11 @@ def threshold_for_admission(scores: Sequence[float], rate: float) -> float:
     return th
 
 
+def _judged(verdicts: Sequence[Verdict]) -> list[bool]:
+    """False where a deterministic check refused the claim whatever the thresholds."""
+    return [all(c.passed for c in v.checks) for v in verdicts]
+
+
 def score_for_thresholds(v: Verdict) -> float:
     """What a support threshold acts on: the judge's support, or 0 when a deterministic
     check (a quantity the source does not contain) refuses the claim at any threshold."""
@@ -104,21 +109,27 @@ class HeldOut:
     max_admitted: float | None = None
 
 
-def held_out(support: Sequence[float], labels: Sequence[str], *, target_loss: float = 0.08,
+def held_out(support: Sequence[float], labels: Sequence[str], *,
+             judged: Sequence[bool] | None = None, target_loss: float = 0.08,
              max_admitted: float | None = None, rounds: int = 200, seed: int = 11) -> HeldOut:
     """Choose the support threshold on a random half of the pairs, measure on the other half.
 
-    The threshold loses about `target_loss` of the supported claims or, with
-    `max_admitted`, admits about that share of the unsupported ones (N and C)."""
+    The threshold loses about `target_loss` of the supported claims the judge decides or,
+    with `max_admitted`, admits about that share of the unsupported ones (N and C).
+    `judged[i]` is False for a claim a deterministic check refused: it cannot move a loss
+    threshold, but it still counts as lost."""
+    judged = [True] * len(support) if judged is None else judged
     rng = random.Random(seed)
     idx = {k: [i for i, lab in enumerate(labels) if lab == k] for k in "SNC"}
     lost, n_adm, c_adm = [], [], []
     for _ in range(rounds):
         halves = {k: rng.sample(v, len(v)) for k, v in idx.items()}
-        cal = [support[i] for i in halves["S"][: len(halves["S"]) // 2]]
-        if not cal:
+        if not halves["S"]:
             break
         if max_admitted is None:
+            cal = [support[i] for i in halves["S"][: len(halves["S"]) // 2] if judged[i]]
+            if not cal:
+                break
             th = threshold_for_loss(cal, target_loss)
         else:
             unsupported = [support[i] for k in "NC" for i in halves[k][: len(halves[k]) // 2]]
@@ -195,7 +206,7 @@ def evaluate_verifier(verifier: Verifier, pairs: Sequence[Pair], *,
         auroc_s_vs_n=auroc(by["S"], by["N"]),
         auroc_s_vs_n_ci=bootstrap_ci(by["S"], by["N"], rounds=bootstrap_rounds),
         auroc_s_vs_nc=auroc(by["S"], by["N"] + by["C"]),
-        supported_rate=rate, held_out=held_out(support, labels),
+        supported_rate=rate, held_out=held_out(support, labels, judged=_judged(verdicts)),
         per_language=per_lang, seconds_per_pair=elapsed, errors=errors)
     return report, verdicts
 
@@ -206,32 +217,41 @@ def calibrate(verifier: Verifier, pairs: Sequence[Pair], *, target_loss: float =
               ) -> tuple[Thresholds, dict[str, Any]]:
     """Thresholds from labelled pairs, with the held-out rates that justify them.
 
-    `support` loses about `target_loss` of true claims (they become unverified) or, with
-    `max_admitted`, lets through about that share of the claims the source does not support
-    (N and C); `uncertain` is set so that only about `quarantine_loss` of true claims fall
-    low enough to be quarantined."""
+    `support` loses about `target_loss` of the true claims the judge decides (they become
+    unverified) or, with `max_admitted`, lets through about that share of the claims the
+    source does not support (N and C). `uncertain` is set so that only about
+    `quarantine_loss` of those true claims fall low enough to be quarantined; with
+    `max_admitted` it stays as in the base policy, since the cap is about what gets verified
+    (and the context check is tied to `uncertain`). Claims the quantity check refuses are lost
+    whatever the thresholds: they do not move a loss threshold, but count in the held-out
+    loss."""
     report, verdicts = evaluate_verifier(verifier, pairs, bootstrap_rounds=200,
                                          progress=progress)
     support = [score_for_thresholds(v) for v in verdicts]
     labels = [p.label for p in pairs]
-    true = [x for x, lab in zip(support, labels, strict=True) if lab == "S"]
+    judged = _judged(verdicts)
+    true = [x for x, lab, ok in zip(support, labels, judged, strict=True) if lab == "S" and ok]
     if len(true) < 10:
-        raise ValueError("calibration needs at least 10 supported (S) pairs")
+        raise ValueError("calibration needs at least 10 supported (S) pairs the judge decides")
+    current = verifier.policy.thresholds
     if max_admitted is None:
         th_support = threshold_for_loss(true, target_loss)
-        objective = f"about {target_loss:.0%} of true claims lost"
+        th_uncertain = min(th_support, threshold_for_loss(true, quarantine_loss))
+        objective = f"about {target_loss:.0%} of the true claims the judge decides lost"
+        uncertain_rule = f"about {quarantine_loss:.0%} of those true claims fall below it"
     else:
         unsupported = [x for x, lab in zip(support, labels, strict=True) if lab != "S"]
         if len(unsupported) < 10:
             raise ValueError("capping admissions needs at least 10 unsupported (N or C) pairs")
         th_support = threshold_for_admission(unsupported, max_admitted)
+        th_uncertain = min(th_support, current.uncertain)
         objective = f"at most {max_admitted:.0%} of unsupported claims admitted"
-    th_uncertain = min(th_support, threshold_for_loss(true, quarantine_loss))
-    ho = held_out(support, labels, target_loss=target_loss, max_admitted=max_admitted)
-    current = verifier.policy.thresholds
+        uncertain_rule = "kept from the base policy"
+    ho = held_out(support, labels, judged=judged, target_loss=target_loss,
+                  max_admitted=max_admitted)
     thresholds = Thresholds(support=round(th_support, 4), uncertain=round(th_uncertain, 4),
                             contradiction=current.contradiction)
-    provenance = {"pairs": report.n, "objective": objective,
+    provenance = {"pairs": report.n, "objective": objective, "uncertain": uncertain_rule,
                   "held_out_true_lost": round(ho.true_lost, 4),
                   "held_out_unstated_admitted": round(ho.unstated_admitted, 4),
                   "held_out_contradicted_admitted": (None if ho.contradicted_admitted is None
