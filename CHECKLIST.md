@@ -17,7 +17,7 @@ Legenda: `[x]` fatto · `[ ]` da fare · `[~]` in corso · `[!]` bloccato (motiv
 - [x] **Repository e pacchetto.** Licenza Apache-2.0, `pyproject.toml` (setuptools, layout
   `src/`, extra `nli`, `mcp`, `dev`), `.gitignore`.
   Fatto quando: `pip install -e ".[dev]"` va a buon fine e `python -c "import verimem"` funziona.
-- [x] **Documenti di base.** `docs/DESIGN.md`, ADR 0001-0009, questa checklist,
+- [x] **Documenti di base.** `docs/DESIGN.md`, ADR 0001-0011, questa checklist,
   `HANDOFF.md`, `CLAUDE.md`. Il piano commerciale è fuori da questo repository pubblico.
 - [x] **CI.** `.github/workflows/ci.yml`: `ruff check` e `pytest -m "not model"` su Linux e
   Windows, Python 3.10 e 3.12, senza modelli, più un job con mcp 1.x. Il primo push ha trovato

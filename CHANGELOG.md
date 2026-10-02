@@ -38,7 +38,7 @@ new command line and new MCP tools (the old `hippo_*` tools are gone). The reaso
   approves facts is off unless `--allow-review`, and `remember` must be told who wrote the
   source (no default author).
 - **Data and documents**: regression cases, TruthfulQA pairs, three QA sets,
-  [`docs/EVAL.md`](docs/EVAL.md), design notes and nine ADRs.
+  [`docs/EVAL.md`](docs/EVAL.md), design notes and eleven ADRs.
 
 ### Known limitations
 

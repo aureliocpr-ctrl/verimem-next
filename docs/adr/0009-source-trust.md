@@ -12,5 +12,7 @@ A trust policy says which kinds may verify a fact. Default: `user`, `document`, 
 Facts sourced only from untrusted kinds are stored `unverified`, labelled with the reason.
 
 ## Consequences
-- Agents must pass the author kind; the MCP tool defaults to `user` and documents why.
+- Agents must pass the author kind. The MCP tool requires it, with no default (amended
+  2026-10-02: the first version defaulted to `user`, so an agent that left it out made
+  web text or its own reasoning pass for the user's words).
 - Operators can widen trust explicitly (for example, a curated internal tool).
