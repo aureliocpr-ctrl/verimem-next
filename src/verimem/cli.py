@@ -333,7 +333,8 @@ def build_parser() -> argparse.ArgumentParser:
     def add(name: str, fn: Any, help_: str, *, db: bool = False) -> argparse.ArgumentParser:
         sp = sub.add_parser(name, help=help_, description=help_)
         sp.set_defaults(fn=fn)
-        sp.add_argument("--policy", help="policy JSON file (default: the bundled policy)")
+        sp.add_argument("--policy", help="a policy JSON file, or the name of a bundled policy "
+                        "(default: default)")
         sp.add_argument("--judge", help="override the policy's judge, e.g. hf:<model> or lexical")
         sp.add_argument("--judge-dtype", choices=["float32", "bfloat16"],
                         help="override the judge's precision: bfloat16 is several times faster "

@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, dataclass, field, replace
 from importlib import resources
 from pathlib import Path
 from typing import Any
 
 from .judges import DTYPES
-
-DEFAULT_POLICY_FILE = "default.json"
 
 
 @dataclass(frozen=True)
@@ -88,7 +87,25 @@ class Policy:
 
     @classmethod
     def load(cls, path: str | Path) -> Policy:
+        """A policy JSON file or, for a bare name that is not a file, a bundled policy."""
+        if isinstance(path, str) and re.fullmatch(r"[\w-]+", path) and not Path(path).exists():
+            return cls.bundled(path)
         return cls.from_dict(json.loads(Path(path).read_text(encoding="utf-8")))
+
+    @staticmethod
+    def bundled_names() -> list[str]:
+        return sorted(f.name.removesuffix(".json") for f in resources.files("verimem.policies")
+                      .iterdir() if f.name.endswith(".json"))
+
+    @classmethod
+    def bundled(cls, name: str) -> Policy:
+        names = cls.bundled_names()
+        if name not in names:
+            raise FileNotFoundError(f"no policy file or bundled policy named {name!r}; "
+                                    f"bundled policies: {', '.join(names)}")
+        text = resources.files("verimem.policies").joinpath(f"{name}.json").read_text(
+            encoding="utf-8")
+        return cls.from_dict(json.loads(text))
 
     def save(self, path: str | Path) -> None:
         Path(path).write_text(json.dumps(self.to_dict(), indent=2, ensure_ascii=False) + "\n",
@@ -96,6 +113,4 @@ class Policy:
 
     @classmethod
     def default(cls) -> Policy:
-        text = resources.files("verimem.policies").joinpath(DEFAULT_POLICY_FILE).read_text(
-            encoding="utf-8")
-        return cls.from_dict(json.loads(text))
+        return cls.bundled("default")

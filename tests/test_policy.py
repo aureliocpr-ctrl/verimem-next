@@ -52,3 +52,16 @@ def test_judge_precision_is_float32_unless_the_policy_says_bfloat16():
     assert Policy.from_dict({**d, "judge_dtype": "bfloat16"}).judge_dtype == "bfloat16"
     with pytest.raises(ValueError, match="judge_dtype"):
         Policy.from_dict({**d, "judge_dtype": "float16"})
+
+
+def test_bundled_policies_load_by_name():
+    assert "default" in Policy.bundled_names()
+    assert Policy.load("default") == Policy.default()
+    with pytest.raises(FileNotFoundError, match="bundled policies: default"):
+        Policy.load("no-such-policy")
+
+
+def test_a_path_is_always_read_as_a_file(tmp_path):
+    p = tmp_path / "default"  # same name as a bundled policy, but a path
+    Policy.from_dict({**Policy.default().to_dict(), "version": "mine"}).save(p)
+    assert Policy.load(p).version == "mine"
