@@ -1,0 +1,337 @@
+{
+ "description": "Second held-out QA set for Memory.ask, written by Claude on 2026-10-02 before the next change to the relevance check was designed: 20 facts about a fictional clinic and one of its patients, 25 questions the facts answer (paraphrases, small inferences, English questions about Italian facts and the reverse) and 25 near misses on the same people and places.",
+ "facts": [
+  {
+   "id": "k01",
+   "text": "Dr. Lena Marchi is the cardiologist at the Aurora clinic."
+  },
+  {
+   "id": "k02",
+   "text": "The Aurora clinic opens at 7:30 on weekdays."
+  },
+  {
+   "id": "k03",
+   "text": "Giorgio takes 5 mg of bisoprolol every morning."
+  },
+  {
+   "id": "k04",
+   "text": "Giorgio's next check-up is on 14 November."
+  },
+  {
+   "id": "k05",
+   "text": "The clinic's lab results are sent by email within 48 hours."
+  },
+  {
+   "id": "k06",
+   "text": "Giorgio is allergic to amoxicillin."
+  },
+  {
+   "id": "k07",
+   "text": "Parking at the clinic costs 2 euros per hour."
+  },
+  {
+   "id": "k08",
+   "text": "Giorgio's wife Carla works as a nurse."
+  },
+  {
+   "id": "k09",
+   "text": "The clinic moved its X-ray room to the second floor."
+  },
+  {
+   "id": "k10",
+   "text": "Giorgio stopped smoking in 2019."
+  },
+  {
+   "id": "k11",
+   "text": "Il centralino della clinica risponde dalle 8 alle 18."
+  },
+  {
+   "id": "k12",
+   "text": "Giorgio corre 10 km ogni domenica."
+  },
+  {
+   "id": "k13",
+   "text": "La dottoressa Marchi riceve il martedì e il giovedì."
+  },
+  {
+   "id": "k14",
+   "text": "Il figlio di Giorgio si chiama Matteo e studia ingegneria a Torino."
+  },
+  {
+   "id": "k15",
+   "text": "La clinica accetta pagamenti con carta e bonifico."
+  },
+  {
+   "id": "k16",
+   "text": "Giorgio ha prenotato una risonanza magnetica al ginocchio sinistro."
+  },
+  {
+   "id": "k17",
+   "text": "Il ticket per la visita cardiologica costa 36 euro."
+  },
+  {
+   "id": "k18",
+   "text": "Giorgio segue una dieta povera di sale."
+  },
+  {
+   "id": "k19",
+   "text": "La clinica è chiusa il 25 dicembre e il 1° gennaio."
+  },
+  {
+   "id": "k20",
+   "text": "Giorgio preferisce essere chiamato al numero fisso."
+  }
+ ],
+ "questions": [
+  {
+   "q": "Who is the cardiologist at the Aurora clinic?",
+   "answer": [
+    "k01"
+   ]
+  },
+  {
+   "q": "What time does the clinic open?",
+   "answer": [
+    "k02"
+   ]
+  },
+  {
+   "q": "How much bisoprolol does Giorgio take?",
+   "answer": [
+    "k03"
+   ]
+  },
+  {
+   "q": "When is Giorgio's next check-up?",
+   "answer": [
+    "k04"
+   ]
+  },
+  {
+   "q": "How are lab results delivered?",
+   "answer": [
+    "k05"
+   ]
+  },
+  {
+   "q": "Is Giorgio allergic to any antibiotic?",
+   "answer": [
+    "k06"
+   ]
+  },
+  {
+   "q": "How much does parking cost at the clinic?",
+   "answer": [
+    "k07"
+   ]
+  },
+  {
+   "q": "What does Giorgio's wife do for a living?",
+   "answer": [
+    "k08"
+   ]
+  },
+  {
+   "q": "Where is the X-ray room now?",
+   "answer": [
+    "k09"
+   ]
+  },
+  {
+   "q": "Does Giorgio still smoke?",
+   "answer": [
+    "k10"
+   ]
+  },
+  {
+   "q": "A che ora risponde il centralino?",
+   "answer": [
+    "k11"
+   ]
+  },
+  {
+   "q": "Quanti chilometri corre Giorgio la domenica?",
+   "answer": [
+    "k12"
+   ]
+  },
+  {
+   "q": "In che giorni riceve la dottoressa Marchi?",
+   "answer": [
+    "k13"
+   ]
+  },
+  {
+   "q": "Dove studia il figlio di Giorgio?",
+   "answer": [
+    "k14"
+   ]
+  },
+  {
+   "q": "Come si può pagare alla clinica?",
+   "answer": [
+    "k15"
+   ]
+  },
+  {
+   "q": "Che esame ha prenotato Giorgio?",
+   "answer": [
+    "k16"
+   ]
+  },
+  {
+   "q": "Quanto costa il ticket della visita cardiologica?",
+   "answer": [
+    "k17"
+   ]
+  },
+  {
+   "q": "Che dieta segue Giorgio?",
+   "answer": [
+    "k18"
+   ]
+  },
+  {
+   "q": "La clinica è aperta a Natale?",
+   "answer": [
+    "k19"
+   ]
+  },
+  {
+   "q": "Come preferisce essere contattato Giorgio?",
+   "answer": [
+    "k20"
+   ]
+  },
+  {
+   "q": "What is the name of Giorgio's son?",
+   "answer": [
+    "k14"
+   ]
+  },
+  {
+   "q": "Which days does Dr. Marchi see patients?",
+   "answer": [
+    "k13"
+   ]
+  },
+  {
+   "q": "Chi è la cardiologa della clinica Aurora?",
+   "answer": [
+    "k01"
+   ]
+  },
+  {
+   "q": "When did Giorgio quit smoking?",
+   "answer": [
+    "k10"
+   ]
+  },
+  {
+   "q": "What medication does Giorgio take in the morning?",
+   "answer": [
+    "k03"
+   ]
+  },
+  {
+   "q": "Who is the dermatologist at the Aurora clinic?",
+   "answer": []
+  },
+  {
+   "q": "What time does the clinic close?",
+   "answer": []
+  },
+  {
+   "q": "How much aspirin does Giorgio take?",
+   "answer": []
+  },
+  {
+   "q": "When was Giorgio's last check-up?",
+   "answer": []
+  },
+  {
+   "q": "How are X-ray results delivered?",
+   "answer": []
+  },
+  {
+   "q": "Is Giorgio allergic to pollen?",
+   "answer": []
+  },
+  {
+   "q": "How much does parking cost at the hospital?",
+   "answer": []
+  },
+  {
+   "q": "What does Giorgio's daughter do for a living?",
+   "answer": []
+  },
+  {
+   "q": "Where is the MRI room?",
+   "answer": []
+  },
+  {
+   "q": "Does Carla smoke?",
+   "answer": []
+  },
+  {
+   "q": "A che ora apre il centralino il sabato?",
+   "answer": []
+  },
+  {
+   "q": "Quanti chilometri corre Matteo?",
+   "answer": []
+  },
+  {
+   "q": "In che giorni riceve il dottor Rossi?",
+   "answer": []
+  },
+  {
+   "q": "Dove lavora il figlio di Giorgio?",
+   "answer": []
+  },
+  {
+   "q": "La clinica accetta pagamenti in contanti?",
+   "answer": []
+  },
+  {
+   "q": "Che esame ha prenotato Carla?",
+   "answer": []
+  },
+  {
+   "q": "Quanto costa il ticket della visita dermatologica?",
+   "answer": []
+  },
+  {
+   "q": "Che sport pratica Carla?",
+   "answer": []
+  },
+  {
+   "q": "La clinica è aperta a Pasqua?",
+   "answer": []
+  },
+  {
+   "q": "Qual è il numero di cellulare di Giorgio?",
+   "answer": []
+  },
+  {
+   "q": "What is the name of Giorgio's daughter?",
+   "answer": []
+  },
+  {
+   "q": "Which floor is the cardiology department on?",
+   "answer": []
+  },
+  {
+   "q": "How old is Giorgio?",
+   "answer": []
+  },
+  {
+   "q": "Why did Giorgio stop smoking?",
+   "answer": []
+  },
+  {
+   "q": "What is Dr. Marchi's phone number?",
+   "answer": []
+  }
+ ]
+}
