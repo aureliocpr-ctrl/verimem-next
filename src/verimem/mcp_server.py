@@ -22,8 +22,10 @@ verimem stores a fact only when its source supports it, and answers only from ve
 - remember: pass the exact text the fact comes from as `source` (the user's words, a document
   passage) and say who wrote that text in `source_author`: user, document, system, agent, tool
   or web. Facts from tool output, web pages or your own reasoning are kept as unverified.
-- ask: answers from verified facts or abstains. When it abstains, tell the user you don't know;
-  do not fill the gap with a guess.
+- ask: answers from verified facts or abstains. Its relevance check is strict and sometimes
+  abstains although the answer is stored; then call recall with the key words of the question.
+  What recall returns is verified, but decide yourself whether it answers. If nothing does,
+  tell the user you don't know; do not fill the gap with a guess.
 - recall: keyword search. A result whose status is not "verified" is a claim, not a fact.
 - check: verify a claim against a source without storing anything.
 """
@@ -35,7 +37,7 @@ def build_server(memory: Memory, *, allow_review: bool = False) -> Any:
     except ImportError as e:  # pragma: no cover - exercised only without the extra
         raise SystemExit("The MCP server needs the 'mcp' extra: pip install 'verimem[mcp]'") from e
 
-    server = FastMCP("verimem", instructions=INSTRUCTIONS)
+    server = FastMCP("verimem", instructions=INSTRUCTIONS, log_level="WARNING")
 
     @server.tool()
     def remember(claim: str, source: str, source_author: str = "user", subject: str | None = None,
