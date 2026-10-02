@@ -14,6 +14,7 @@ from verimem.evalkit import (
     held_out,
     load_pairs,
     render_verifier_report,
+    threshold_for_admission,
     threshold_for_loss,
 )
 from verimem.judges import NLIScores
@@ -39,6 +40,43 @@ def test_threshold_for_loss_targets_the_expected_share():
     scores = [i / 100 for i in range(100)]
     th = threshold_for_loss(scores, 0.08)
     assert 0.06 <= sum(s < th for s in scores) / len(scores) <= 0.09
+
+
+def test_threshold_for_admission_targets_the_expected_share():
+    scores = [i / 100 for i in range(100)]
+    th = threshold_for_admission(scores, 0.05)
+    assert 0.03 <= sum(s >= th for s in scores) / len(scores) <= 0.05
+    assert threshold_for_admission([0.4, 0.4, 0.4], 0.0) > 0.4  # ties are all kept out
+
+
+def test_threshold_for_admission_never_admits_more_than_its_share():
+    rng = random.Random(5)
+    for _ in range(2000):
+        xs = [round(rng.random(), rng.choice([2, 4, 17])) for _ in range(rng.randint(1, 40))]
+        rate = rng.choice([0.0, 0.05, 0.1, 0.3])
+        th = threshold_for_admission(xs, rate)
+        assert sum(x >= th for x in xs) <= int(rate * (len(xs) + 1))
+        assert th == round(th, 4)
+
+
+def test_held_out_with_an_admission_cap_admits_about_that_share():
+    rng = random.Random(3)
+    support = [rng.uniform(0.3, 1.0) for _ in range(200)] + [rng.uniform(0.0, 0.7)
+                                                             for _ in range(200)]
+    ho = held_out(support, ["S"] * 200 + ["N"] * 200, max_admitted=0.05)
+    assert ho.max_admitted == 0.05
+    assert 0.02 <= ho.unstated_admitted <= 0.07
+    assert 0.0 < ho.true_lost < 1.0
+
+
+def test_a_claim_refused_by_the_quantity_check_scores_zero_for_thresholds():
+    # The judge likes both claims; the check refuses the one with a number the source lacks.
+    v = Verifier(judge=FakeJudge(lambda p, h: NLIScores(entailment=0.9)), policy=make_policy())
+    ps = [Pair("We hired 3 engineers in May.", "We hired 3 engineers.", "S", "en", "s"),
+          Pair("We hired 3 engineers in May.", "We hired 5 engineers.", "N", "en", "n")]
+    rep, verdicts = evaluate_verifier(v, ps, bootstrap_rounds=10)
+    assert verdicts[1].support == pytest.approx(0.9)  # the verdict keeps the judge's score
+    assert rep.auroc_s_vs_n == 1.0  # thresholds act on what the verifier would do
 
 
 def test_held_out_on_a_perfect_separator_admits_nothing_unstated():
@@ -85,6 +123,19 @@ def test_calibrate_picks_a_threshold_between_the_classes():
     assert 0.25 < th.support <= 0.66
     assert th.uncertain <= th.support
     assert prov["held_out_unstated_admitted"] == 0.0
+
+
+def test_calibrate_can_cap_the_share_of_unsupported_claims_admitted():
+    def graded(premise, hypothesis):
+        i = int(hypothesis.split("alpha")[1].split()[0])
+        # S scores 0.50-0.79 overlap N scores 0.20-0.78
+        return NLIScores(entailment=0.5 + i / 100 if "beta" in hypothesis else 0.2 + i / 50)
+
+    v = Verifier(judge=FakeJudge(graded), policy=make_policy())
+    th, prov = calibrate(v, pairs(), max_admitted=0.1)
+    assert sum(0.2 + i / 50 >= th.support for i in range(30)) <= 3  # 10% of the N pairs
+    assert th.uncertain <= th.support
+    assert prov["objective"] == "at most 10% of unsupported claims admitted"
 
 
 def test_calibrate_refuses_tiny_sets():

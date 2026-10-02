@@ -104,6 +104,31 @@ questions (interviews, support chats) need care until this is handled.
 - **One chunk, one source**: a memory that combines two chunks of a conversation is checked
   against the chunk it was given, and fails if the chunk lacks part of it.
 
+### How many windows to judge
+
+On a long source the verifier judges only the windows that a lexical and character-trigram
+prefilter ranks highest, and each judged window costs one call to the model. To choose how
+many, the train split of RAGTruth (human-labelled responses of six LLMs; see below) was
+used as design data: the top 12 windows of 754 claims from its Summary and QA tasks were
+scored once, then reread for each budget k (`scripts/research/window_budget.py`). The
+"reach 0.5" columns are the judge alone, without the quantity and context checks.
+
+| k | QA: AUROC S vs N | QA: S / N / C reach 0.5 | Summary: AUROC S vs N | Summary: S / N / C reach 0.5 |
+|---|---|---|---|---|
+| 1 | 0.858 | 70.5% / 17.0% / 40.0% | 0.748 | 51.0% / 12.7% / 23.5% |
+| 2 | 0.864 | 75.0% / 18.0% / 46.7% | 0.770 | 56.5% / 15.2% / 27.5% |
+| 3 | 0.872 | 78.5% / 19.1% / 50.0% | 0.785 | 59.5% / 15.2% / 27.5% |
+| **4** | **0.873** | **81.0% / 20.1% / 50.0%** | **0.786** | **60.0% / 15.2% / 29.4%** |
+| 6 | 0.869 | 81.5% / 22.7% / 50.0% | 0.791 | 60.0% / 15.2% / 29.4% |
+| 8 | 0.865 | 82.5% / 24.2% / 50.0% | 0.789 | 60.0% / 15.2% / 29.4% |
+| 12 | 0.859 | 82.5% / 24.7% / 50.0% | 0.795 | 61.0% / 16.5% / 29.4% |
+
+(QA: 200 S, 194 N, 30 C; Summary: 200 S, 79 N, 51 C.) Going from 12 windows to 4 lets 1.0
+to 1.5 points fewer true claims through and 1.3 to 4.6 points fewer unsupported ones, with
+a third of the model calls on long sources. On the short sources of the other datasets no
+verdict changed (review cases, example pairs, TruthfulQA, cross-lingual cases). The default
+policy (`0.9.0-provisional.2`) judges at most 4 windows; before it was 12.
+
 ## Abstention (`ask`)
 
 Two QA sets, both written by Claude: [`qa-mini.json`](../datasets/qa-mini.json), on which the

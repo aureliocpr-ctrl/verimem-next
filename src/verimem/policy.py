@@ -38,11 +38,11 @@ class Policy:
     per_language: dict[str, Thresholds] = field(default_factory=dict)
     numeric_check: bool = True
     context_check: bool = True
-    max_windows: int = 12
+    max_windows: int = 4
     window_sizes: tuple[int, ...] = (1, 2)
     full_source_max_chars: int = 1500
     trusted_authors: tuple[str, ...] = ("user", "document", "system")
-    relevance_threshold: float = 0.5
+    relevance_threshold: float = 0.4
     relevance_related_threshold: float = 0.05
     relevance_templates: dict[str, str] = field(default_factory=lambda: {
         "en": "This text answers the question: {question}",

@@ -36,3 +36,11 @@ def test_language_specific_thresholds():
                                                   "contradiction": 0.8}}})
     assert p.thresholds_for("it").support == 0.7
     assert p.thresholds_for("en") == p.thresholds
+
+
+def test_code_defaults_match_the_bundled_policy():
+    # A Policy built in code (tests, embedders) must behave like the bundled one.
+    bundled = Policy.default().to_dict()
+    bare = Policy(version=bundled["version"], judge=bundled["judge"]).to_dict()
+    assert {k: v for k, v in bare.items() if k != "calibration"} == {
+        k: v for k, v in bundled.items() if k != "calibration"}

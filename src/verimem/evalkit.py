@@ -75,6 +75,25 @@ def threshold_for_loss(scores: Sequence[float], loss: float) -> float:
     return s[min(k, len(s)) - 1]
 
 
+def threshold_for_admission(scores: Sequence[float], rate: float) -> float:
+    """A threshold that a new unsupported claim reaches with probability ~`rate`: just above
+    the (k+1)-th highest score, k = rate * (n + 1), so at most k of these scores reach it."""
+    s = sorted(scores, reverse=True)
+    k = int(rate * (len(s) + 1))
+    if k >= len(s):
+        return 0.0
+    th = round(s[k], 4)  # four decimals, as policies store them
+    while th <= s[k]:
+        th = round(th + 0.0001, 4)
+    return th
+
+
+def score_for_thresholds(v: Verdict) -> float:
+    """What a support threshold acts on: the judge's support, or 0 when a deterministic
+    check (a quantity the source does not contain) refuses the claim at any threshold."""
+    return 0.0 if any(not c.passed for c in v.checks) else v.support
+
+
 @dataclass
 class HeldOut:
     target_loss: float
@@ -82,11 +101,15 @@ class HeldOut:
     unstated_admitted: float
     contradicted_admitted: float | None
     rounds: int
+    max_admitted: float | None = None
 
 
 def held_out(support: Sequence[float], labels: Sequence[str], *, target_loss: float = 0.08,
-             rounds: int = 200, seed: int = 11) -> HeldOut:
-    """Choose the support threshold on a random half of the pairs, measure on the other half."""
+             max_admitted: float | None = None, rounds: int = 200, seed: int = 11) -> HeldOut:
+    """Choose the support threshold on a random half of the pairs, measure on the other half.
+
+    The threshold loses about `target_loss` of the supported claims or, with
+    `max_admitted`, admits about that share of the unsupported ones (N and C)."""
     rng = random.Random(seed)
     idx = {k: [i for i, lab in enumerate(labels) if lab == k] for k in "SNC"}
     lost, n_adm, c_adm = [], [], []
@@ -95,7 +118,13 @@ def held_out(support: Sequence[float], labels: Sequence[str], *, target_loss: fl
         cal = [support[i] for i in halves["S"][: len(halves["S"]) // 2]]
         if not cal:
             break
-        th = threshold_for_loss(cal, target_loss)
+        if max_admitted is None:
+            th = threshold_for_loss(cal, target_loss)
+        else:
+            unsupported = [support[i] for k in "NC" for i in halves[k][: len(halves[k]) // 2]]
+            if not unsupported:
+                break
+            th = threshold_for_admission(unsupported, max_admitted)
         test = {k: v[len(v) // 2 :] for k, v in halves.items()}
         lost.append(statistics.fmean(support[i] < th for i in test["S"]))
         if test["N"]:
@@ -104,7 +133,7 @@ def held_out(support: Sequence[float], labels: Sequence[str], *, target_loss: fl
             c_adm.append(statistics.fmean(support[i] >= th for i in test["C"]))
     return HeldOut(target_loss, statistics.fmean(lost) if lost else float("nan"),
                    statistics.fmean(n_adm) if n_adm else float("nan"),
-                   statistics.fmean(c_adm) if c_adm else None, len(lost))
+                   statistics.fmean(c_adm) if c_adm else None, len(lost), max_admitted)
 
 
 # ---------------------------------------------------------------- verifier evaluation
@@ -136,7 +165,7 @@ def evaluate_verifier(verifier: Verifier, pairs: Sequence[Pair], *,
     t0 = time.perf_counter()
     verdicts = verifier.check_many([(p.source, p.claim) for p in pairs])
     elapsed = (time.perf_counter() - t0) / max(1, len(pairs))
-    support = [v.support for v in verdicts]
+    support = [score_for_thresholds(v) for v in verdicts]
     labels = [p.label for p in pairs]
     by = {k: [s for s, lab in zip(support, labels, strict=True) if lab == k] for k in "SNC"}
     rate = {k: (statistics.fmean(v.label is Label.SUPPORTED
@@ -165,24 +194,39 @@ def evaluate_verifier(verifier: Verifier, pairs: Sequence[Pair], *,
 
 
 def calibrate(verifier: Verifier, pairs: Sequence[Pair], *, target_loss: float = 0.08,
+              max_admitted: float | None = None,
               quarantine_loss: float = 0.02) -> tuple[Thresholds, dict[str, Any]]:
     """Thresholds from labelled pairs, with the held-out rates that justify them.
 
-    `support` loses about `target_loss` of true claims (they become unverified); `uncertain`
-    is set so that only about `quarantine_loss` of true claims fall low enough to be
-    quarantined."""
+    `support` loses about `target_loss` of true claims (they become unverified) or, with
+    `max_admitted`, lets through about that share of the claims the source does not support
+    (N and C); `uncertain` is set so that only about `quarantine_loss` of true claims fall
+    low enough to be quarantined."""
     report, verdicts = evaluate_verifier(verifier, pairs, bootstrap_rounds=200)
-    support = [v.support for v, p in zip(verdicts, pairs, strict=True) if p.label == "S"]
-    if len(support) < 10:
+    support = [score_for_thresholds(v) for v in verdicts]
+    labels = [p.label for p in pairs]
+    true = [x for x, lab in zip(support, labels, strict=True) if lab == "S"]
+    if len(true) < 10:
         raise ValueError("calibration needs at least 10 supported (S) pairs")
-    th_support = threshold_for_loss(support, target_loss)
-    th_uncertain = min(th_support, threshold_for_loss(support, quarantine_loss))
+    if max_admitted is None:
+        th_support = threshold_for_loss(true, target_loss)
+        objective = f"about {target_loss:.0%} of true claims lost"
+    else:
+        unsupported = [x for x, lab in zip(support, labels, strict=True) if lab != "S"]
+        if len(unsupported) < 10:
+            raise ValueError("capping admissions needs at least 10 unsupported (N or C) pairs")
+        th_support = threshold_for_admission(unsupported, max_admitted)
+        objective = f"at most {max_admitted:.0%} of unsupported claims admitted"
+    th_uncertain = min(th_support, threshold_for_loss(true, quarantine_loss))
+    ho = held_out(support, labels, target_loss=target_loss, max_admitted=max_admitted)
     current = verifier.policy.thresholds
     thresholds = Thresholds(support=round(th_support, 4), uncertain=round(th_uncertain, 4),
                             contradiction=current.contradiction)
-    provenance = {"pairs": report.n, "target_true_loss": target_loss,
-                  "held_out_true_lost": round(report.held_out.true_lost, 4),
-                  "held_out_unstated_admitted": round(report.held_out.unstated_admitted, 4),
+    provenance = {"pairs": report.n, "objective": objective,
+                  "held_out_true_lost": round(ho.true_lost, 4),
+                  "held_out_unstated_admitted": round(ho.unstated_admitted, 4),
+                  "held_out_contradicted_admitted": (None if ho.contradicted_admitted is None
+                                                     else round(ho.contradicted_admitted, 4)),
                   "auroc_s_vs_n": round(report.auroc_s_vs_n, 4), "judge": report.judge}
     return thresholds, provenance
 

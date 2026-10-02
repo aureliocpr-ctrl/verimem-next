@@ -45,6 +45,13 @@ def _read_source(args: argparse.Namespace) -> str | None:
     return getattr(args, "source_text", None)
 
 
+def _share(text: str) -> float:
+    value = float(text)
+    if not 0.0 <= value < 1.0:
+        raise argparse.ArgumentTypeError(f"{text} is not a share between 0 and 1")
+    return value
+
+
 def _command(args: argparse.Namespace) -> str:
     """The command line as typed, for the provenance line of generated reports."""
     return "verimem " + shlex.join(args.argv)
@@ -202,13 +209,20 @@ def cmd_audit_review(args: argparse.Namespace) -> int:
 
 
 def cmd_eval(args: argparse.Namespace) -> int:
-    from .evalkit import evaluate_verifier, load_pairs, render_verifier_report
+    from .evalkit import evaluate_verifier, load_pairs, render_verifier_report, score_for_thresholds
 
     pairs = load_pairs(args.pairs)
-    rep, _ = evaluate_verifier(_ready_verifier(args), pairs)
+    rep, verdicts = evaluate_verifier(_ready_verifier(args), pairs)
     md = render_verifier_report(rep, dataset=str(args.pairs), command=_command(args))
     if args.markdown:
         Path(args.markdown).write_text(md, encoding="utf-8")
+    if args.pairs_out:
+        # `score` is what a support threshold acts on (0 when a deterministic check refuses).
+        Path(args.pairs_out).write_text("".join(
+            json.dumps({"id": p.id, "label": p.label, "verdict": v.label.value,
+                        "support": round(v.support, 6), "score": round(score_for_thresholds(v), 6),
+                        "lang": p.lang or v.language}, ensure_ascii=False) + "\n"
+            for p, v in zip(pairs, verdicts, strict=True)), encoding="utf-8")
     _emit(args, rep.to_dict(), md)
     return 0
 
@@ -238,13 +252,15 @@ def cmd_calibrate(args: argparse.Namespace) -> int:
     from .evalkit import calibrate, load_pairs
 
     verifier = _ready_verifier(args)
-    th, prov = calibrate(verifier, load_pairs(args.pairs), target_loss=args.target_loss)
+    loss = 0.08 if args.target_loss is None else args.target_loss
+    th, prov = calibrate(verifier, load_pairs(args.pairs), target_loss=loss,
+                         max_admitted=args.max_admitted)
     pol = verifier.policy.with_thresholds(th, version=args.version,
                                           calibration={"verifier": {"dataset": str(args.pairs),
                                                                     **prov}})
     pol.save(args.out)
-    print(f"support >= {th.support}, uncertain >= {th.uncertain}; held-out: true lost "
-          f"{prov['held_out_true_lost']:.0%}, unstated admitted "
+    print(f"support >= {th.support}, uncertain >= {th.uncertain} ({prov['objective']}); "
+          f"held-out: true lost {prov['held_out_true_lost']:.0%}, unstated admitted "
           f"{prov['held_out_unstated_admitted']:.0%}. Policy written to {args.out}")
     return 0
 
@@ -370,6 +386,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp = add("eval", cmd_eval, "evaluate the verifier on labelled pairs (S/N/C)")
     sp.add_argument("pairs")
     sp.add_argument("--markdown", help="also write the Markdown report to this file")
+    sp.add_argument("--pairs-out", help="also write one JSON line per pair (verdict, scores)")
 
     sp = add("eval-ask", cmd_eval_ask, "evaluate abstention on a QA set")
     sp.add_argument("qa")
@@ -380,7 +397,11 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("pairs")
     sp.add_argument("--out", required=True, help="policy JSON to write")
     sp.add_argument("--version", required=True, help="version string for the new policy")
-    sp.add_argument("--target-loss", type=float, default=0.08)
+    goal = sp.add_mutually_exclusive_group()
+    goal.add_argument("--target-loss", type=_share,
+                      help="share of true claims the support threshold may lose (default 0.08)")
+    goal.add_argument("--max-admitted", type=_share,
+                      help="instead, the largest share of unsupported claims (N, C) it may admit")
 
     add("warmup", cmd_warmup, "download (once) and load the judge model")
     add("doctor", cmd_doctor, "check the installation", db=True)

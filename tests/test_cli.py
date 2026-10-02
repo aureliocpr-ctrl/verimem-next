@@ -186,3 +186,36 @@ def test_ask_output_separates_answers_from_related_facts():
     text = answer_text(a)
     assert text.startswith("not in memory:")
     assert "related" in text and "Anna leads the data platform team." in text
+
+
+def labelled(tmp_path):
+    data = tmp_path / "d.csv"
+    rows = ["source,claim,label"]
+    for i in range(12):
+        rows.append(f"Note {i}: alpha{i} beta{i}.,alpha{i} beta{i},S")
+        rows.append(f"Note {i}: alpha{i}.,alpha{i} gamma{i},N")
+    data.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    return data
+
+
+def test_eval_writes_one_line_per_pair(tmp_path, capsys):
+    out = tmp_path / "scores.jsonl"
+    code, _ = run(capsys, "eval", str(labelled(tmp_path)), "--judge", "lexical",
+                  "--pairs-out", str(out))
+    rows = [json.loads(line) for line in out.read_text("utf-8").splitlines()]
+    assert code == 0 and len(rows) == 24
+    assert set(rows[0]) == {"id", "label", "verdict", "support", "score", "lang"}
+
+
+def test_calibrate_takes_a_loss_target_or_an_admission_cap(tmp_path, capsys):
+    data, pol = labelled(tmp_path), tmp_path / "p.json"
+    code, out = run(capsys, "calibrate", str(data), "--judge", "lexical", "--out", str(pol),
+                    "--version", "t1", "--max-admitted", "0.05")
+    written = json.loads(pol.read_text("utf-8"))
+    assert code == 0 and written["version"] == "t1"
+    assert written["calibration"]["verifier"]["objective"] == (
+        "at most 5% of unsupported claims admitted")
+    assert "at most 5% of unsupported claims admitted" in out
+    with pytest.raises(SystemExit):
+        main(["calibrate", str(data), "--out", str(pol), "--version", "t2",
+              "--target-loss", "0.1", "--max-admitted", "0.05"])

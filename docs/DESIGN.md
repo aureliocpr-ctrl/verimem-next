@@ -105,8 +105,10 @@ Input: `source` (text), `claim` (one atomic statement). Output: `Verdict`.
 1. **Windows.** The source is split into sentences with offsets. Candidate windows are
    single sentences and pairs of adjacent sentences, plus the whole source when short. A
    window made only of questions is skipped: a question asserts nothing (next to its answer
-   it is still context). When there are many windows, a lexical prefilter keeps the
-   `max_windows` most relevant.
+   it is still context). When there are many windows, a lexical and character-trigram
+   prefilter keeps the `max_windows` most relevant (4 in the default policy, chosen on
+   RAGTruth's train split: [EVAL.md](EVAL.md#how-many-windows-to-judge)), always including
+   the whole source when it is short enough to be a window.
 2. **Quantity check.** Every number, percentage, amount and date in the claim must appear in
    the source (digits or words, IT/EN, with thousands/decimal ambiguity resolved both ways).
    A missing quantity is a deterministic `not_supported`, whatever the model says. This is

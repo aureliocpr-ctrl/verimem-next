@@ -1,8 +1,9 @@
 """How many windows does the verifier need to judge per claim on long sources?
 
-The verifier judges up to `max_windows` (12) windows per claim, ranked by a lexical
-prefilter, and keeps the best. On long sources that is most of the cost. This scores the
-top 12 windows of each pair once, then asks what judging only the top k would have given:
+The verifier judges up to `max_windows` windows per claim, ranked by a lexical prefilter,
+and keeps the best. On long sources that is most of the cost. This scores the top 12 windows
+of each pair once (12 was the default before this study, 4 after it), then asks what judging
+only the top k would have given:
 the AUROC of S vs N and of S vs C, the share of S and N whose support passes 0.5, and where
 the best window sits in the prefilter's ranking.
 

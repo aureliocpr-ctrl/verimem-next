@@ -9,7 +9,8 @@ new command line and new MCP tools (the old `hippo_*` tools are gone). The reaso
 ### Added
 
 - **Verifier**: sentence windows of the source (a window made only of questions is never
-  evidence), a lexical and character-trigram prefilter for long sources, a deterministic veto
+  evidence), a lexical and character-trigram prefilter that keeps 4 windows on long sources
+  (chosen on RAGTruth's train split), a deterministic veto
   on numbers, amounts and dates the source does not contain (Italian and English, digits and
   words), a context check for reversals, and a batched NLI judge. Default judge:
   `MoritzLaurer/bge-m3-zeroshot-v2.0-c` (MIT), loaded from the local cache only.
@@ -24,7 +25,9 @@ new command line and new MCP tools (the old `hippo_*` tools are gone). The reaso
   could not confirm as answers.
 - **Evaluation**: `verimem eval`, `eval-ask` and `calibrate`; thresholds chosen on half the
   pairs and measured on the other half; Markdown reports that record the command, the judge
-  and the policy.
+  and the policy. `calibrate` aims at a share of true claims lost (`--target-loss`) or caps
+  the share of unsupported claims admitted (`--max-admitted`); `eval --pairs-out` writes one
+  line per pair. A claim the quantity check refuses scores 0 in threshold analysis.
 - **Memory reliability report**: `verimem audit` (Markdown in English or Italian, a
   self-contained HTML page, JSON, and a review sheet) and `verimem audit-review` (an estimate checked by a person, with a 95%
   interval).
