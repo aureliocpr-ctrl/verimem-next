@@ -58,7 +58,6 @@ def test_context_reversal_downgrades_to_uncertain():
             return NLIScores(entailment=0.02)
         return cover(premise, hypothesis)
 
-
     src = "The demo was planned for Thursday. Update from Anna: it has been moved to Friday."
     v = verifier(FakeJudge(judge)).check(src, "The demo was planned for Thursday.")
     assert v.label is Label.UNCERTAIN
@@ -66,6 +65,34 @@ def test_context_reversal_downgrades_to_uncertain():
     off = verifier(FakeJudge(judge), context_check=False).check(
         src, "The demo was planned for Thursday.")
     assert off.label is Label.SUPPORTED
+
+
+def test_a_question_is_never_evidence_on_its_own():
+    src = "Luca: Is Maria the new head of sales?\nMaria: I would not bet on it."
+    v = verifier(window_sizes=[1], full_source_max_chars=0).check(
+        src, "Maria is the new head of sales.")
+    assert v.label is Label.NOT_SUPPORTED
+    assert v.evidence is None or "?" not in v.evidence.text
+
+
+def test_a_question_still_gives_context_to_its_answer():
+    def judge(premise, hypothesis):
+        both = "Where do you live" in premise and "Milan" in premise
+        return NLIScores(entailment=1.0 if both else 0.0)
+
+    src = "Assistant: Where do you live now?\nUser: In Milan, since 2021."
+    v = verifier(FakeJudge(judge), full_source_max_chars=0).check(
+        src, "The user lives in Milan since 2021.")
+    assert v.label is Label.SUPPORTED
+    assert v.evidence is not None and v.evidence.text == src
+
+
+def test_a_source_that_only_asks_questions_supports_nothing():
+    judge = FakeJudge()
+    v = verifier(judge).check("Has Maria moved to Milan? Since when?", "Maria moved to Milan.")
+    assert v.label is Label.NOT_SUPPORTED
+    assert v.evidence is None and "question" in v.reason
+    assert judge.calls == []
 
 
 def test_three_way_judge_reports_contradictions():

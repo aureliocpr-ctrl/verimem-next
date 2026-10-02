@@ -1,4 +1,4 @@
-from verimem.text import content_tokens, guess_language, split_sentences
+from verimem.text import content_tokens, guess_language, is_question, split_sentences
 
 
 def texts(s: str) -> list[str]:
@@ -82,3 +82,11 @@ def test_content_tokens_drop_stopwords_keep_digits():
     toks = content_tokens("The API limit is 100 requests per minute for the key")
     assert {"api", "limit", "100", "requests", "minute", "key"} <= toks
     assert "the" not in toks and "is" not in toks
+
+
+def test_questions_are_recognised():
+    assert is_question("Did Maria move to Milan?")
+    assert is_question('Luca asked: "Is it true?"')
+    assert is_question("Davvero?!")
+    assert not is_question("Maria moved to Milan.")
+    assert not is_question("Is it 3? Yes.")

@@ -24,6 +24,7 @@ _SENT_END = re.compile(r"[.!?…]+[\"'”’»)\]]*(?=\s)")
 _BULLET = re.compile(r"^\s*(?:[-*•▪◦]|\d{1,3}[.)])\s+")
 _SPEAKER = re.compile(r"^\s*[\w .'-]{1,30}:\s")
 _WORD = re.compile(r"\w+", re.UNICODE)
+_QUESTION_END = re.compile(r"\?[?!…]*[\"'”’»)\]]*\s*$")
 
 _STOP_IT = frozenset(
     """
@@ -125,6 +126,11 @@ def _append_span(text: str, start: int, end: int, out: list[Span]) -> None:
     s, e = start + lead, end - trail
     if e > s:
         out.append(Span(s, e, text[s:e]))
+
+
+def is_question(sentence: str) -> bool:
+    """True when the sentence asks instead of stating (it ends with a question mark)."""
+    return _QUESTION_END.search(sentence) is not None
 
 
 def words(text: str) -> list[str]:

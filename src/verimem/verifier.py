@@ -9,7 +9,14 @@ from dataclasses import dataclass
 from .judges import Judge, JudgeUnavailable, NLIScores, load_judge
 from .numbers import missing_quantities
 from .policy import Policy
-from .text import char_trigrams, content_tokens, guess_language, normalize_ws, split_sentences
+from .text import (
+    char_trigrams,
+    content_tokens,
+    guess_language,
+    is_question,
+    normalize_ws,
+    split_sentences,
+)
 from .types import Check, Evidence, Label, Span, Verdict
 
 
@@ -101,13 +108,18 @@ class Verifier:
         sents = split_sentences(source)
         if not sents:
             return [Span(0, len(source), source)]
+        # A question states nothing, so it is never evidence on its own; next to its answer
+        # it is context ("Where do you live?" "In Milan.").
+        asks = [is_question(s.text) for s in sents]
         seen: dict[tuple[int, int], Span] = {}
         for size in self.policy.window_sizes:
             for i in range(len(sents) - size + 1):
+                if all(asks[i : i + size]):
+                    continue
                 s, e = sents[i].start, sents[i + size - 1].end
                 seen.setdefault((s, e), Span(s, e, source[s:e]))
         whole = (sents[0].start, sents[-1].end)
-        has_whole = len(source) <= self.policy.full_source_max_chars
+        has_whole = len(source) <= self.policy.full_source_max_chars and not all(asks)
         if has_whole:
             seen.setdefault(whole, Span(*whole, source[whole[0] : whole[1]]))
         windows = list(seen.values())
@@ -136,6 +148,17 @@ class Verifier:
 
     def _decide(self, p: _Prepared, scores: Sequence[NLIScores], judge_id: str,
                 elapsed_ms: float) -> Verdict:
+        checks: tuple[Check, ...] = ()
+        if self.policy.numeric_check:
+            detail = ("quantities not in the source: " + ", ".join(p.missing)) if p.missing \
+                else "every quantity in the claim appears in the source"
+            checks = (Check("quantities", not p.missing, detail),)
+        if not p.windows:
+            return Verdict(label=Label.NOT_SUPPORTED, support=0.0, contradiction=None,
+                           evidence=None, checks=checks, judge=judge_id,
+                           policy=self.policy.version, language=p.language,
+                           reason="the source only asks questions: it states nothing",
+                           elapsed_ms=elapsed_ms)
         th = self.policy.thresholds_for(p.language)
         best_i = max(range(len(scores)), key=lambda i: scores[i].entailment)
         best_s = scores[best_i].entailment
@@ -146,11 +169,6 @@ class Verifier:
             w, s = p.windows[i], scores[i]
             return Evidence(w.start, w.end, w.text, s.entailment, s.contradiction)
 
-        checks: tuple[Check, ...] = ()
-        if self.policy.numeric_check:
-            detail = ("quantities not in the source: " + ", ".join(p.missing)) if p.missing \
-                else "every quantity in the claim appears in the source"
-            checks = (Check("quantities", not p.missing, detail),)
 
         contradicted = best_c is not None and best_c >= th.contradiction
         context_s = self._context_support(p.windows, scores, best_i)
