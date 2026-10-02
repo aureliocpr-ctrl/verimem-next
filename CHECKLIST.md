@@ -50,12 +50,12 @@ Legenda: `[x]` fatto · `[ ]` da fare · `[~]` in corso · `[!]` bloccato (motiv
 
 ## Fase 2 — La memoria
 
-- [ ] **Store** (`store.py`): schema v1, migrazioni, FTS5, transazioni, id ordinabili nel tempo.
-- [ ] **Audit** (`audit.py`): catena di hash, verifica, esportazione JSONL; solo hash, mai testo.
+- [x] **Store** (`store.py`): schema v1, migrazioni, FTS5, transazioni, id ordinabili nel tempo.
+- [x] **Audit** (`audit.py`): catena di hash, verifica, esportazione JSONL; solo hash, mai testo.
   Fatto quando: un test di manomissione trova la riga alterata.
-- [ ] **Memory** (`memory.py`): `remember` (fiducia nella fonte, verifica, stato,
+- [x] **Memory** (`memory.py`): `remember` (fiducia nella fonte, verifica, stato,
   supersessione per `subject`), `get`, `history`, `review`, `forget`, `stats`.
-- [ ] **Invarianti come test**: `verified` solo con giudice-modello o revisione umana; la
+- [x] **Invarianti come test**: `verified` solo con giudice-modello o revisione umana; la
   mappatura verdetto→stato sta in una sola funzione; `forget` non lascia testo nel database;
   la catena resta valida dopo `forget`.
   Fatto quando: `pytest tests/test_memory.py tests/test_invariants.py` passa.

@@ -21,10 +21,18 @@ pytest -m "not model"
 VERIMEM_TEST_MODELS=1 pytest -m model
 ```
 
+- **Fase 2 (memoria)**: completa. `store.py` (SQLite + FTS5, cancellazione fisica),
+  `audit.py` (catena di hash con impronte HMAC, mai testo), `memory.py` (un solo percorso di
+  scrittura, `status_for` unica funzione di mappatura, supersessione per `subject`,
+  revisione umana, `forget`). Gli invarianti di DESIGN §3 sono test, falsificati con mutazioni
+  (`tests/test_invariants.py`). Nota: questa build di SQLite ha `secure_delete` già attivo;
+  il codice lo forza comunque, perché altre build no.
+
 ## Prossimo passo
 
-Fase 2: `store.py` (schema SQLite + FTS5), `audit.py` (catena di hash), `memory.py`
-(remember con fiducia nella fonte e supersessione, review, forget) e i test degli invarianti.
+Fase 3: misurare `ask` (astensione). Serve un piccolo set di domande con e senza risposta
+(`datasets/qa-mini.jsonl`) e un comando che stampi astensioni giuste e sbagliate per
+scegliere il modello di ipotesi e la soglia di pertinenza con i numeri.
 
 ## Decisioni aperte per Aurelio
 
