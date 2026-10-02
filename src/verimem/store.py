@@ -20,7 +20,7 @@ _SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 
 CREATE TABLE IF NOT EXISTS sources (
-    id          TEXT PRIMARY KEY,           -- sha256 of the whitespace-normalised text
+    id          TEXT PRIMARY KEY,           -- keyed hash of author, origin and normalised text
     text        TEXT,                       -- NULL once every fact using it is forgotten
     origin      TEXT NOT NULL DEFAULT '',
     author      TEXT NOT NULL,

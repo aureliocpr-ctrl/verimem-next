@@ -100,8 +100,10 @@ Modules (`src/verimem/`):
 Input: `source` (text), `claim` (one atomic statement). Output: `Verdict`.
 
 1. **Windows.** The source is split into sentences with offsets. Candidate windows are
-   single sentences and pairs of adjacent sentences, plus the whole source when short. When
-   there are many windows, a lexical prefilter keeps the `max_windows` most relevant.
+   single sentences and pairs of adjacent sentences, plus the whole source when short. A
+   window made only of questions is skipped: a question asserts nothing (next to its answer
+   it is still context). When there are many windows, a lexical prefilter keeps the
+   `max_windows` most relevant.
 2. **Quantity check.** Every number, percentage, amount and date in the claim must appear in
    the source (digits or words, IT/EN, with thousands/decimal ambiguity resolved both ways).
    A missing quantity is a deterministic `not_supported`, whatever the model says. This is
@@ -109,10 +111,12 @@ Input: `source` (text), `claim` (one atomic statement). Output: `Verdict`.
    invented number.
 3. **Judge.** All windows are scored in one batched call: entailment probability, and
    contradiction probability when the judge is three-way.
-4. **Decision** with the policy thresholds for the claim's language:
-   `supported` if best entailment ≥ `support`; `contradicted` if a three-way judge gives
-   contradiction ≥ `contradiction`; `uncertain` if entailment ≥ `uncertain`; otherwise
-   `not_supported`.
+4. **Decision** with the policy thresholds for the claim's language, in this order: a missing
+   quantity gives `not_supported` (unless a three-way judge finds a contradiction); a
+   contradiction ≥ `contradiction` with weak support gives `contradicted`; best entailment ≥
+   `support` gives `supported`, unless a larger window around the best one scores below
+   `uncertain` (the context reverses it: "moved to Friday"), which gives `uncertain`;
+   entailment ≥ `uncertain` gives `uncertain`; otherwise `not_supported`.
 5. **Evidence**: the best-supporting window (or the contradicting one).
 
 Default judge: `MoritzLaurer/bge-m3-zeroshot-v2.0-c` (MIT, commercially-friendly training
@@ -124,11 +128,13 @@ conditions to change it.
 
 ### 6.1 Data model (SQLite)
 
-- `sources(id = sha256 of normalised text, text, origin, author, observed_at, created_at, meta)`
-- `facts(id, text, subject, status, label, support, verdict JSON, source_id, evidence JSON,
-  written_by, created_at, valid_from, superseded_by, superseded_at)` + FTS5 index on `text`
+- `sources(id, text, origin, author, observed_at, created_at, meta)`: the id is a keyed hash
+  of author, origin and normalised text, so each fact keeps the provenance of its own write
+- `facts(id, text, norm, subject, status, reason, label, support, verdict JSON (with the
+  evidence), source_id, written_by, created_at, valid_from, superseded_by, superseded_at,
+  reviewed_by, meta)` + FTS5 index on `text` (Porter stemming, diacritics removed)
 - `events(seq, ts, kind, fact_id, payload JSON, prev_hash, hash)` — the audit chain
-- `meta(key, value)` — schema version, store id
+- `meta(key, value)` — schema version, store id, the key for the hashes
 
 ### 6.2 Statuses
 
@@ -143,13 +149,14 @@ conditions to change it.
 
 ### 6.3 Write path — `remember(claim, source=..., author=..., subject=...)`
 
-1. Validate input; store the source (content-addressed, deduplicated).
+1. Validate input; store the source (one row per author, origin and text).
 2. Source trust: sources whose author is not trusted for verification (by default `web`
    and `tool`) can never produce `verified`; the fact is stored `unverified`.
 3. Verify with the verifier; map the label to a status.
 4. If verified and a `subject` is given, earlier verified facts on that subject are
    superseded when the new source is not older.
-5. Insert fact, FTS row and audit event in one transaction.
+5. Insert fact, FTS row and audit event in one transaction. A verified fact identical to
+   one already verified on the same subject is not stored twice (`duplicate_of`).
 
 ### 6.4 Human review
 
@@ -163,7 +170,9 @@ mistakes and the basis of a review queue.
   statuses (default: `verified`), excluding superseded and forgotten. Each result carries
   status, evidence sentence, source origin and verdict summary.
 - `ask(question, k)`: recall candidates, then score answerability with a relevance model;
-  return the facts above threshold, or abstain with a reason.
+  return the facts above `relevance_threshold`, or abstain with a reason. Verified facts
+  between `relevance_related_threshold` and the threshold come back as `related`: true, not
+  confirmed as answers, left to the caller's judgement.
 
 ## 7. Policy and calibration
 
@@ -183,11 +192,11 @@ baseline is as good as the model, the dataset is too easy). The numbers in READM
 
 ## 9. Interfaces
 
-- **Python:** `Memory`, `Verifier`, `Policy`, `audit_pairs`.
-- **CLI:** `verimem check | remember | recall | ask | review | forget | stats | audit | eval |
-  calibrate | chain | warmup | doctor | mcp`.
-- **MCP:** tools `remember`, `recall`, `ask`, `check`, `review_queue`, `review`, `forget`,
-  `stats`. The judge is loaded once when the server starts.
+- **Python:** `Memory`, `Verifier`, `Policy`, `audit_pairs`, `summarize_review`.
+- **CLI:** `verimem check | remember | recall | ask | queue | review | forget | stats | chain |
+  audit | audit-review | eval | eval-ask | calibrate | warmup | doctor | mcp`.
+- **MCP:** tools `remember`, `recall`, `ask`, `check`, `review_queue`, `forget`, `stats`, and
+  `review` only with `--allow-review`. The judge starts loading when the server starts.
 
 ## 10. Dependencies
 
