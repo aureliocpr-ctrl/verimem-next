@@ -18,13 +18,13 @@ Legenda: `[x]` fatto · `[ ]` da fare · `[~]` in corso · `[!]` bloccato (motiv
   `src/`, extra `nli`, `mcp`, `dev`), `.gitignore`.
   Fatto quando: `pip install -e ".[dev]"` va a buon fine e `python -c "import verimem"` funziona.
 - [x] **Documenti di base.** `docs/DESIGN.md`, ADR 0001-0009, questa checklist,
-  `HANDOFF.md`, `CLAUDE.md`, `docs/BUSINESS.md`.
+  `HANDOFF.md`, `CLAUDE.md`, `docs/business/BUSINESS.md`.
 - [~] **CI.** Workflow scritto (`.github/workflows/ci.yml`: `ruff check` e
   `pytest -m "not model"` su Linux e Windows, Python 3.10 e 3.12, senza modelli).
   Fatto quando: il primo push su GitHub ha la CI verde.
 - [!] **Repository su GitHub.** Bloccato: l'integrazione della sessione cloud non può creare
   repository (errore 403). Aurelio crea `aureliocpr-ctrl/verimem-next` vuoto e dà accesso
-  all'app Claude. Prima del primo push va deciso se `docs/BUSINESS.md` (prezzi e strategia)
+  all'app Claude. Prima del primo push va deciso se `docs/business/` (piano, prezzi, bozze commerciali)
   può essere pubblico (vedi HANDOFF, decisioni aperte).
   Fatto quando: `git push -u origin main` riesce.
 
@@ -114,9 +114,15 @@ Legenda: `[x]` fatto · `[ ]` da fare · `[~]` in corso · `[!]` bloccato (motiv
 
 ## Fase 9 — Mercato
 
-- [ ] Pagina dell'offerta "Memory Reliability Audit" (IT/EN).
-- [ ] Bozza di post (IT/EN) con i numeri veri; lista di 30 contatti; messaggio di contatto.
-- [ ] Pubblicazione nel registro MCP (dopo la fase 7).
+- [x] Pagina dell'offerta "Memory Reliability Audit" (IT/EN): bozze in `docs/business/`,
+  manca il prezzo (decisione di Aurelio).
+- [x] Manuale di consegna dell'audit (`docs/business/consegna-audit.md`), con il numero di
+  memorie da rivedere da `scripts/research/review_sample_size.py`.
+- [x] Bozza di post (IT/EN) con i numeri veri e i limiti; messaggi di contatto e criteri per
+  trovare i clienti (`docs/business/`). Le cifre di mercato citate sono state ricontrollate
+  con le fonti il 2026-10-02.
+- [ ] Lista di 30 contatti (lavoro di Aurelio: relazioni e scelta dei nomi).
+- [ ] Pubblicazione nel registro MCP (dopo il primo push e la scelta su PyPI).
 
 ## Fase 10 — Solo dopo il primo segnale pagante
 

@@ -52,10 +52,11 @@ disegna su un insieme di dati e si giudica su un altro scritto prima.
 
 1. **Creare il repository** `aureliocpr-ctrl/verimem-next` (vuoto) e dare accesso all'app
    Claude: senza, il lavoro resta in questa sessione. Poi il primo push e la CI.
-2. **`docs/BUSINESS.md` in un repository pubblico?** Contiene prezzi ipotizzati, clienti
-   tipo e criteri di stop. Se il repository sarà pubblico e non vuoi che si vedano, va tolto
-   dalla storia **prima** del primo push (una riscrittura dei commit locali, facile adesso,
-   difficile dopo).
+2. **`docs/business/` in un repository pubblico?** Contiene il piano (prezzi ipotizzati,
+   clienti tipo, criteri di stop), le bozze dell'offerta, dei messaggi di contatto e del post,
+   e il manuale di consegna dell'audit. Se il repository sarà pubblico e non vuoi che si
+   vedano, la cartella va tolta dalla storia **prima** del primo push (una riscrittura dei
+   commit locali, facile adesso, difficile dopo).
 3. **PyPI**: pubblicare questa versione con il nome `verimem` (oggi installa la 0.7.x)?
 4. Più avanti: rinominare questo repository in `verimem` e archiviare il vecchio?
 
