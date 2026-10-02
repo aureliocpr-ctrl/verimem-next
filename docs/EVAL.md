@@ -129,6 +129,29 @@ a third of the model calls on long sources. On the short sources of the other da
 verdict changed (review cases, example pairs, TruthfulQA, cross-lingual cases). The default
 policy (since `0.9.0-provisional.2`) judges at most 4 windows; before it was 12.
 
+### Windows made of non-adjacent sentences: studied, not adopted
+
+A memory often joins two sentences that are not next to each other ("I moved to Milan" in
+one turn, "that was in 2021" three turns later). Windows of one or two adjacent sentences
+cannot support it, and the whole source is a window only up to 1,500 characters. One more
+window per claim, the 2 or 3 sentences the prefilter ranks highest joined in source order,
+was scored on the same design data (`scripts/research/composite_window.py … --dump FILE`,
+then `scripts/research/composite_analysis.py FILE`):
+
+| Windows | Summary: AUROC S vs N+C | Summary: S kept at 10% / 5% of N+C admitted | QA: AUROC S vs N+C | QA: S kept at 10% / 5% |
+|---|---|---|---|---|
+| 4 (default) | 0.749 | 45.5% / 35.0% | 0.853 | 63.5% / 49.5% |
+| 4 + top 2 sentences | 0.785 | 51.0% / 36.5% | 0.857 | 62.5% / 51.0% |
+| 4 + top 3 sentences | 0.795 | 55.5% / 38.5% | 0.854 | 62.5% / 54.0% |
+
+On long sources it ranks better, but at the default threshold it also lets more errors
+through: on Summary, +6.5 points of true claims came with +1.3 points of unstated and +3.9
+of contradicted claims, even when the joined window had to score 0.95 instead of 0.5. A bar
+high enough to add no error (0.98) added 3 points of true claims, 6 of 200: within the
+noise, and not worth a second kind of evidence (two passages instead of one) and a fifth
+model call per claim. Long conversations are where it would matter most; this needs data of
+that kind (Gate 1) to decide.
+
 ## Abstention (`ask`)
 
 Two QA sets, both written by Claude: [`qa-mini.json`](../datasets/qa-mini.json), on which the
@@ -171,6 +194,26 @@ contains every word the question asks about (commit cecfccb) took qa-mini from 1
 right answers with no false answer, but on the held-out set it gave 16 right answers instead
 of 15 and 4 false answers instead of 2, so it was reverted (09426c3). Better relevance needs
 a better model, not more word rules (CHECKLIST, phase 3).
+
+**Tried and not adopted: an existential statement.** The question turned into a statement
+("Who leads the team?" → "Someone leads the team") and judged as a hypothesis
+(`python scripts/research/ask_existential.py datasets/qa-mini.json datasets/qa-heldout.json`)
+answered more questions, 22 instead of 17 and 19 instead of 15 at threshold 0.4, but gave a
+fact to 7 and 5 of the 25 questions the facts do not answer, instead of 0 and 2. Its AUROC
+was lower on both sets (0.931 against 0.971, 0.778 against 0.811).
+
+**Tried and not adopted: an extractive QA model.** `deepset/xlm-roberta-large-squad2`
+(CC BY 4.0), trained on SQuAD 2.0, whose unanswerable questions are written to look
+answerable, scored each (question, fact) pair as the gap between its best answer span and
+"no answer" (`python scripts/research/ask_extractive_qa.py deepset/xlm-roberta-large-squad2
+datasets/qa-mini.json datasets/qa-heldout.json`). It answered 24 and 19 of the 25 answerable
+questions, against 17 and 15, but it also answered near misses that swap an entity: "Che moto
+guida Laura?" got "Fiat Panda" (a car), "How many days do customers have to exchange an
+item?" got the 30 days of the refund policy: 2 false answers of 25 on qa-mini, where the
+current check gives none, and 2 or 3 on qa-heldout, where it gives 2, at every threshold
+from 0.3 to 0.95. The base model (`deepset/xlm-roberta-base-squad2`) gave 3 to 12.
+The rule fixed before trying was "more right answers and no more false ones", so neither was
+adopted and `qa-heldout-2.json` stays unused for the next attempt.
 
 **Related facts.** Instead of moving the threshold, `ask` keeps it and hands over, as
 `related`, the verified facts it retrieved whose relevance falls between a floor (0.05) and
