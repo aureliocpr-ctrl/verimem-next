@@ -213,3 +213,15 @@ def test_load_pairs_reads_json_lines_holding_a_unicode_line_separator(tmp_path):
     row = {"source": "Line one line two.", "claim": "Line one.", "label": "S"}
     p.write_text(json.dumps(row, ensure_ascii=False) + "\n", encoding="utf-8")
     assert [q.source for q in load_pairs(p)] == ["Line one line two."]
+
+
+def test_report_shows_auroc_by_language_when_there_are_several():
+    # pairs() alternates S and N: every other S/N couple becomes Italian
+    ps = [p if (i // 2) % 2 else Pair(p.source, p.claim, p.label, "it", p.id)
+          for i, p in enumerate(pairs())]
+    v = Verifier(judge=FakeJudge(), policy=make_policy())
+    rep, _ = evaluate_verifier(v, ps, bootstrap_rounds=20)
+    md = render_verifier_report(rep, dataset="d", command="c")
+    assert "AUROC S vs N by language: en 1.000 (30 pairs), it 1.000 (30 pairs)." in md
+    one, _ = evaluate_verifier(v, pairs(), bootstrap_rounds=20)
+    assert "by language" not in render_verifier_report(one, dataset="d", command="c")

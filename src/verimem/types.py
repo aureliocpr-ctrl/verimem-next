@@ -6,6 +6,8 @@ from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Any
 
+from ._version import __version__
+
 
 class Label(str, Enum):
     """What the verifier concluded about a claim and its source."""
@@ -82,6 +84,7 @@ class Verdict:
     language: str
     reason: str
     elapsed_ms: float = 0.0
+    verimem_version: str = __version__  # verdicts of different code are told apart
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
@@ -103,6 +106,7 @@ class Verdict:
             language=d.get("language", "und"),
             reason=d.get("reason", ""),
             elapsed_ms=float(d.get("elapsed_ms", 0.0)),
+            verimem_version=d.get("verimem_version", ""),
         )
 
 

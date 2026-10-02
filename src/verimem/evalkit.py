@@ -256,6 +256,10 @@ def render_verifier_report(r: VerifierReport, *, dataset: str, command: str) -> 
         f"{r.seconds_per_pair:.2f} |",
         "",
     ]
+    if len(r.per_language) > 1:
+        by_lang = ", ".join(f"{lang} {_num(d['auroc_s_vs_n'], '.3f')} ({d['pairs']} pairs)"
+                            for lang, d in sorted(r.per_language.items()))
+        lines += [f"AUROC S vs N by language: {by_lang}.", ""]
     # False accepts first: a fact the source does not support is the costly error.
     accepted = [e for e in r.errors if e["verdict"] == Label.SUPPORTED.value]
     refused = [e for e in r.errors if e["verdict"] != Label.SUPPORTED.value]

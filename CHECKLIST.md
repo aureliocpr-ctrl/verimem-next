@@ -145,9 +145,10 @@ Le bozze di questa fase sono fuori dal repository pubblico (consegnate ad Aureli
 
 ## Piccole cose note, da fare quando si tocca il codice vicino
 
-- [ ] Il verdetto registra giudice e policy ma non la versione di verimem che l'ha prodotto:
-  aggiungerla prima del rilascio, se no i verdetti di versioni diverse non si distinguono.
+- [x] Il verdetto registra anche la versione di verimem che l'ha prodotto (`verimem_version`;
+  vuota nei verdetti salvati prima). `pytest tests/test_verifier.py`.
 - [ ] Le domande nella fonte possono ancora prestare il loro presupposto a un'affermazione
   (TruthfulQA: "Why does the government lie about…?"). Casi in `docs/EVAL.md`.
-- [ ] `verimem eval` calcola l'AUROC per lingua ma il Markdown non lo mostra.
+- [x] `verimem eval` mostra l'AUROC per lingua nel Markdown quando le lingue sono più di
+  una. `pytest tests/test_evalkit.py`.
 - [ ] Le quantità negate ("not signed on July 4") fanno scattare il veto.

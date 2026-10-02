@@ -144,3 +144,13 @@ def test_empty_claim_is_an_error():
 
     with pytest.raises(ValueError):
         verifier().check(SOURCE, "  ")
+
+
+def test_a_verdict_records_the_verimem_version_that_produced_it():
+    from verimem import __version__
+
+    v = verifier().check("Maria moved to Milan in 2021.", "Maria moved to Milan.")
+    assert v.verimem_version == __version__
+    assert Verdict.from_dict(v.to_dict()) == v
+    old = {k: x for k, x in v.to_dict().items() if k != "verimem_version"}
+    assert Verdict.from_dict(old).verimem_version == ""  # stored before the field existed
