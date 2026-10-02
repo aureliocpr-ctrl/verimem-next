@@ -11,6 +11,9 @@ verimem eval datasets/review-cases.csv --judge lexical --markdown docs/eval/revi
 verimem eval datasets/truthfulqa-pairs.jsonl --markdown docs/eval/truthfulqa.md
 verimem eval datasets/truthfulqa-pairs.jsonl --judge lexical --markdown docs/eval/truthfulqa-lexical.md
 verimem eval datasets/crosslingual-cases.csv --markdown docs/eval/crosslingual-cases.md
+# The strict policy (made by scripts/external/ragtruth.sh) on the paraphrase-heavy sets
+verimem eval datasets/review-cases.csv --policy src/verimem/policies/strict.json --markdown docs/eval/review-cases-strict.md
+verimem eval datasets/truthfulqa-pairs.jsonl --policy src/verimem/policies/strict.json --markdown docs/eval/truthfulqa-strict.md
 verimem eval-ask datasets/qa-mini.json --markdown docs/eval/qa-mini.md
 verimem eval-ask datasets/qa-heldout.json --markdown docs/eval/qa-heldout.md
 verimem eval examples/audit/pairs.jsonl --markdown docs/eval/example-pairs.md
