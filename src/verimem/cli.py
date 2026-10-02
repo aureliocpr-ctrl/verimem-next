@@ -103,7 +103,7 @@ def cmd_recall(args: argparse.Namespace) -> int:
     with _memory(args) as m:
         hits = m.recall(args.query, k=args.k, include=include)
         _emit(args, [h.to_dict() for h in hits],
-              "\n".join(_fact_line(h.fact, h.score) for h in hits) or "nothing found")
+              "\n".join(_fact_line(h.fact) for h in hits) or "nothing found")
     return 0
 
 

@@ -156,3 +156,11 @@ def test_audit_review_turns_a_reviewed_sample_into_an_estimate(tmp_path, capsys)
     code, out = run(capsys, "audit-review", str(folder), "--lang", "it")
     assert code == 0 and "Memorie non dette dalla loro fonte: 50%" in out
     assert (folder / "review-summary.md").read_text("utf-8").startswith("# Revisione umana")
+
+
+def test_recall_does_not_print_raw_keyword_scores(tmp_path, capsys):
+    common = ["--db", str(tmp_path / "m.db"), "--judge", "lexical"]
+    run(capsys, "remember", "Maria moved to Milan.", "--source-text",
+        "Maria moved from Rome to Milan.", *common)
+    code, out = run(capsys, "recall", "Maria Milan", "--all", *common)
+    assert code == 0 and "Maria moved to Milan." in out and "score" not in out
