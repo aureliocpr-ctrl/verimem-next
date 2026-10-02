@@ -24,7 +24,7 @@ Cosa è debole, misurato:
   era disegnata e non su quello tenuto da parte: ritirata (commit cecfccb e 09426c3).
 - **Nessun numero viene da dati reali.** Le soglie restano provvisorie fino al Cancello 1.
 
-Suite: `pytest -m "not model"` → 137 test passati; `ruff check src tests` pulito;
+Suite: `pytest -m "not model"` → 138 test passati (con mcp 1.30 e con mcp 2.2); `ruff check src tests` pulito;
 `VERIMEM_TEST_MODELS=1 pytest -m model` → 2 passati (ultima esecuzione: 2026-10-02).
 
 ## Come si lavora
@@ -43,8 +43,7 @@ disegna su un insieme di dati e si giudica su un altro scritto prima.
 
 ## Prossimo passo
 
-1. **Fase 7, rilascio**: costruire la wheel, installarla in un ambiente pulito, smoke test,
-   CHANGELOG. Senza pubblicare su PyPI.
+1. **Fase 7**: fatta tranne versione e PyPI, che aspettano Aurelio.
 2. **Fase 9, mercato**: pagina dell'offerta "Memory Reliability Audit" e messaggio di
    contatto, con i numeri di `docs/EVAL.md` e il rapporto di esempio.
 3. Per Aurelio, quando vuole: **Cancello 1** con `scripts/gate1/LEGGIMI.md`.

@@ -93,9 +93,14 @@ Legenda: `[x]` fatto · `[ ]` da fare · `[~]` in corso · `[!]` bloccato (motiv
 
 ## Fase 7 — Rilascio
 
-- [ ] Wheel costruita e installata in un venv pulito; smoke test.
+- [x] Wheel e sdist costruite (`python -m build`) e installate in ambienti puliti: solo la
+  wheel (CLI, `doctor`, giudice lessicale, `audit`, errore chiaro senza l'extra `nli`); la
+  wheel con l'extra `mcp` (mcp 2.2: server su stdio con un client vero); la sdist con
+  `[dev,mcp]` (138 test passati). Non provato in ambiente pulito: l'extra `nli` (torch),
+  provato solo nell'ambiente di sviluppo.
 - [x] README onesto: cosa fa, cosa non fa, numeri presi da `docs/EVAL.md`.
-- [ ] CHANGELOG e versione 0.9.0.
+- [x] CHANGELOG (`CHANGELOG.md`, 0.9.0 non ancora rilasciata).
+- [ ] Versione 0.9.0 al posto di 0.9.0.dev0: insieme alla decisione su PyPI.
 - [ ] Pubblicazione su PyPI: **solo con l'ok di Aurelio** (il nome `verimem` è già suo e oggi
   installa la 0.7.x).
 
