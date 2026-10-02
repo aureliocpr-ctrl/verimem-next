@@ -17,13 +17,15 @@ DEFAULT_DB = Path(os.environ.get("VERIMEM_DB", Path.home() / ".verimem" / "memor
 
 
 def _policy(args: argparse.Namespace) -> Any:
+    from dataclasses import replace
+
     from .policy import Policy
 
     pol = Policy.load(args.policy) if args.policy else Policy.default()
     if getattr(args, "judge", None):
-        from dataclasses import replace
-
         pol = replace(pol, judge=args.judge)
+    if getattr(args, "judge_dtype", None):
+        pol = replace(pol, judge_dtype=args.judge_dtype)
     return pol
 
 
@@ -289,6 +291,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     pol = _policy(args)
     report["policy"] = pol.version
     report["judge"] = pol.judge
+    report["judge_dtype"] = pol.judge_dtype
     from .judges import JudgeUnavailable
 
     try:
@@ -321,6 +324,9 @@ def build_parser() -> argparse.ArgumentParser:
         sp.set_defaults(fn=fn)
         sp.add_argument("--policy", help="policy JSON file (default: the bundled policy)")
         sp.add_argument("--judge", help="override the policy's judge, e.g. hf:<model> or lexical")
+        sp.add_argument("--judge-dtype", choices=["float32", "bfloat16"],
+                        help="override the judge's precision: bfloat16 is several times faster "
+                             "on CPUs with AMX units, and moves scores by a few hundredths")
         sp.add_argument("--json", action="store_true", help="machine-readable output")
         if db:
             sp.add_argument("--db", type=Path, default=DEFAULT_DB,

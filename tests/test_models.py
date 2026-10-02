@@ -47,3 +47,12 @@ def test_batched_scores_match_one_by_one_and_keep_their_order(verifier):
     together = judge.score(pairs)
     alone = [judge.score([p])[0] for p in pairs]
     assert [round(a.entailment, 3) for a in together] == [round(b.entailment, 3) for b in alone]
+
+
+def test_the_judge_runs_in_float32_whatever_the_checkpoint_says(verifier):
+    # transformers 5 would load this float16 checkpoint as float16, transformers 4 as
+    # float32: the precision is set explicitly so the scores do not depend on the version.
+    import torch
+
+    verifier.warmup()
+    assert next(verifier.judge._model.parameters()).dtype == torch.float32

@@ -38,10 +38,17 @@ class JudgeUnavailable(RuntimeError):
     """The judge cannot run here (missing extra, model not downloaded, load failure)."""
 
 
-def load_judge(spec: str, *, allow_download: bool = False) -> Judge:
+# Precisions a model judge can run in. float32 gives the same scores on every CPU and with
+# every transformers version; bfloat16 is several times faster on CPUs with AMX units (Intel
+# Sapphire Rapids and later) and moves scores by a few hundredths.
+DTYPES = ("float32", "bfloat16")
+
+
+def load_judge(spec: str, *, allow_download: bool = False, dtype: str = "float32") -> Judge:
     """Build a judge from a spec string.
 
-    - ``hf:<model id>`` or ``hf:<model id>@<revision>``: a Hugging Face NLI classifier.
+    - ``hf:<model id>`` or ``hf:<model id>@<revision>``: a Hugging Face NLI classifier, run
+      in `dtype` (one of `DTYPES`).
     - ``lexical``: word-overlap baseline (never trusted to verify).
     """
     if spec == "lexical" or spec.startswith("lexical:"):
@@ -52,8 +59,9 @@ def load_judge(spec: str, *, allow_download: bool = False) -> Judge:
         from .hf import HFNLIJudge
 
         model, _, revision = spec[3:].partition("@")
-        return HFNLIJudge(model, revision=revision or None, allow_download=allow_download)
+        return HFNLIJudge(model, revision=revision or None, allow_download=allow_download,
+                          dtype=dtype)
     raise ValueError(f"unknown judge spec: {spec!r} (expected 'hf:<model>' or 'lexical')")
 
 
-__all__ = ["Judge", "JudgeUnavailable", "NLIScores", "load_judge"]
+__all__ = ["DTYPES", "Judge", "JudgeUnavailable", "NLIScores", "load_judge"]

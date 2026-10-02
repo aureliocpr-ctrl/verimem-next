@@ -46,7 +46,8 @@ class Verifier:
     @property
     def judge(self) -> Judge:
         if self._judge is None:
-            self._judge = load_judge(self.policy.judge, allow_download=self._allow_download)
+            self._judge = load_judge(self.policy.judge, allow_download=self._allow_download,
+                                     dtype=self.policy.judge_dtype)
         return self._judge
 
     def warmup(self) -> str:

@@ -1,6 +1,7 @@
 {
-  "version": "0.9.0-provisional.2",
+  "version": "0.9.0-provisional.3",
   "judge": "hf:MoritzLaurer/bge-m3-zeroshot-v2.0-c",
+  "judge_dtype": "float32",
   "thresholds": {
     "support": 0.5,
     "uncertain": 0.2,

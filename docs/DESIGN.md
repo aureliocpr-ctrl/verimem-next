@@ -49,8 +49,10 @@ to audit an existing memory (the "memory reliability report").
    source, judge error, untrusted source → never `verified`.
 2. **One write path, one read path.** Every surface (Python API, CLI, MCP, adapters) calls
    `Memory.remember` / `Memory.recall` / `Memory.ask`. No surface re-implements a decision.
-3. **Every verdict is reproducible.** It records judge id (model + revision), policy
-   version, thresholds used, scores and evidence offsets.
+3. **Every verdict is reproducible.** It records judge id (model, revision and, when not
+   float32, the precision the model ran in), policy version, verimem version, scores and
+   evidence offsets. The precision is set by the policy, never left to the installed
+   library's default.
 4. **Evidence is what the judge used**: the source window with the highest support score,
    not the window with the most words in common.
 5. **No silent network calls.** Nothing contacts a remote service unless configured

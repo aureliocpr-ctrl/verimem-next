@@ -8,6 +8,8 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
+from .judges import DTYPES
+
 DEFAULT_POLICY_FILE = "default.json"
 
 
@@ -34,6 +36,7 @@ class Policy:
 
     version: str
     judge: str
+    judge_dtype: str = "float32"  # precision of a model judge, one of judges.DTYPES
     thresholds: Thresholds = field(default_factory=Thresholds)
     per_language: dict[str, Thresholds] = field(default_factory=dict)
     numeric_check: bool = True
@@ -49,6 +52,11 @@ class Policy:
         "it": "Questo testo risponde alla domanda: {question}",
     })
     calibration: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        if self.judge_dtype not in DTYPES:
+            raise ValueError(f"judge_dtype {self.judge_dtype!r} is not one of "
+                             f"{', '.join(DTYPES)}")
 
     def thresholds_for(self, language: str) -> Thresholds:
         return self.per_language.get(language, self.thresholds)

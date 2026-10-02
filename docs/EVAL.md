@@ -127,7 +127,7 @@ scored once, then reread for each budget k (`scripts/research/window_budget.py`)
 to 1.5 points fewer true claims through and 1.3 to 4.6 points fewer unsupported ones, with
 a third of the model calls on long sources. On the short sources of the other datasets no
 verdict changed (review cases, example pairs, TruthfulQA, cross-lingual cases). The default
-policy (`0.9.0-provisional.2`) judges at most 4 windows; before it was 12.
+policy (since `0.9.0-provisional.2`) judges at most 4 windows; before it was 12.
 
 ## Abstention (`ask`)
 
@@ -192,9 +192,27 @@ above) and 3 whose right fact scored below the floor.
 | What | Measured | Command |
 |---|---|---|
 | Model download | 1.16 GB (`model.safetensors` 1.14 GB, tokenizer files 0.02 GB) | `verimem warmup` |
-| Loading the judge | 7.4 s, 1.35 GB peak memory | `Verifier.default().warmup()`, `resource.getrusage` |
-| One `verimem check` from a cold start | 8.4 s | `time verimem check …` |
+| Loading the judge (float32, the default) | 8.8 s; 3.9 GB peak while loading, 2.9 GB resident after | `Verifier().warmup()`, `resource.getrusage`, `/proc/self/statm` |
+| Loading the judge (bfloat16) | 6.7 s; 2.9 GB peak while loading, 1.8 GB resident after | same, with `judge_dtype` set to `bfloat16` |
+| One `verimem check` from a cold start | 8.9-9.1 s | `time verimem check …` |
 | Per pair, batched, model loaded | 0.07-0.28 s | `verimem eval` (table above) |
+| Per window, float32 / bfloat16 | 0.198 s / 0.042 s | `python scripts/research/precision.py` (below) |
+
+**Precision.** The default judge's weights are stored in float16. transformers 5 loads them
+as float16, transformers 4 as float32, so until 0.9.0-provisional.3 the scores depended on the
+installed version. The judge now runs in the precision the policy names (`judge_dtype`,
+float32 by default; `--judge-dtype` on the command line). On 600 (window, claim) pairs from
+RAGTruth's train split, scored on this machine (`scripts/research/precision.py`):
+
+| Precision | s per pair | Largest change vs float32 | Mean change | Pairs crossing 0.5 |
+|---|---|---|---|---|
+| float32 | 0.198 | | | |
+| float16 | 0.190 | 0.0026 | 0.00017 | 0 of 600 |
+| bfloat16 | 0.042 | 0.0396 | 0.00195 | 2 of 600 |
+
+This CPU has AMX units, which run bfloat16 in hardware: on CPUs without them bfloat16 is not
+expected to be faster (not measured here). Verdicts made in bfloat16 say so in the judge id
+(`…@705510dfe0f3+bfloat16`).
 
 ## Reproduce
 

@@ -154,3 +154,17 @@ def test_a_verdict_records_the_verimem_version_that_produced_it():
     assert Verdict.from_dict(v.to_dict()) == v
     old = {k: x for k, x in v.to_dict().items() if k != "verimem_version"}
     assert Verdict.from_dict(old).verimem_version == ""  # stored before the field existed
+
+
+def test_the_judge_gets_the_policys_precision_and_names_it():
+    import pytest
+
+    from verimem.judges import load_judge
+
+    j = load_judge("hf:some/model@abc", dtype="bfloat16")
+    assert j.dtype == "bfloat16" and j.id == "hf:some/model@abc+bfloat16"
+    assert load_judge("hf:some/model@abc").id == "hf:some/model@abc"
+    with pytest.raises(ValueError, match="float16"):
+        load_judge("hf:some/model", dtype="float16")
+    v = Verifier(policy=make_policy(judge="hf:some/model", judge_dtype="bfloat16"))
+    assert v.judge.dtype == "bfloat16"

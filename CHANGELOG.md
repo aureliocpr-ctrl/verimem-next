@@ -12,8 +12,11 @@ new command line and new MCP tools (the old `hippo_*` tools are gone). The reaso
   evidence), a lexical and character-trigram prefilter that keeps 4 windows on long sources
   (chosen on RAGTruth's train split), a deterministic veto
   on numbers, amounts and dates the source does not contain (Italian and English, digits and
-  words), a context check for reversals, and a batched NLI judge. Default judge:
-  `MoritzLaurer/bge-m3-zeroshot-v2.0-c` (MIT), loaded from the local cache only.
+  words, 24- and 12-hour times), a context check for reversals, and a batched NLI judge.
+  Default judge: `MoritzLaurer/bge-m3-zeroshot-v2.0-c` (MIT), loaded from the local cache
+  only, in float32 whatever the installed transformers would default to (`judge_dtype`
+  bfloat16 as an option for CPUs with AMX). Each verdict names the judge, the policy and the
+  verimem version.
 - **Memory**: one write path; statuses `verified`, `unverified`, `quarantined`, `rejected`,
   `superseded`, `forgotten`, decided by one function; trust by source author; supersession by
   subject; human review; `forget` that removes the text from the database file, the source

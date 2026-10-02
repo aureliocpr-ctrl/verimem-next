@@ -44,3 +44,11 @@ def test_code_defaults_match_the_bundled_policy():
     bare = Policy(version=bundled["version"], judge=bundled["judge"]).to_dict()
     assert {k: v for k, v in bare.items() if k != "calibration"} == {
         k: v for k, v in bundled.items() if k != "calibration"}
+
+
+def test_judge_precision_is_float32_unless_the_policy_says_bfloat16():
+    d = Policy.default().to_dict()
+    assert Policy.default().judge_dtype == "float32"
+    assert Policy.from_dict({**d, "judge_dtype": "bfloat16"}).judge_dtype == "bfloat16"
+    with pytest.raises(ValueError, match="judge_dtype"):
+        Policy.from_dict({**d, "judge_dtype": "float16"})

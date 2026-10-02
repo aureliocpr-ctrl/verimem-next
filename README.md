@@ -58,8 +58,11 @@ verimem warmup        # downloads the default judge once: 1.16 GB
 ```
 
 Python 3.10 or later. The core has no dependencies; the `nli` extra brings torch and
-transformers, the `mcp` extra the MCP server. The default judge needs about 1.4 GB of memory
-and runs on CPU.
+transformers, the `mcp` extra the MCP server. The default judge runs on CPU, in float32: it
+needs about 3 GB of memory once loaded (4 GB at peak while loading). On a CPU with AMX units
+(Intel Xeon of the 4th generation and later), `--judge-dtype bfloat16` makes it about five
+times faster and lighter (1.8 GB), with scores that move by a few hundredths
+([measurements](docs/EVAL.md#resources)).
 
 ## Quickstart
 

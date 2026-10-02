@@ -14,7 +14,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from . import JudgeUnavailable, NLIScores
+from . import DTYPES, JudgeUnavailable, NLIScores
 
 _ENTAIL = {"entailment", "entailed", "supported", "support", "consistent"}
 _CONTRA = {"contradiction", "contradicted", "refuted"}
@@ -43,6 +43,12 @@ def _cached_revision(model_id: str, revision: str | None) -> str | None:
     return None
 
 
+def _transformers_major() -> int:
+    import transformers
+
+    return int(transformers.__version__.split(".")[0])
+
+
 def _norm(label: str) -> str:
     return str(label).strip().lower().replace("-", "_").replace(" ", "_")
 
@@ -53,9 +59,12 @@ class HFNLIJudge:
     is_model = True
 
     def __init__(self, model_id: str, *, revision: str | None = None, device: str = "cpu",
-                 max_length: int = 512, batch_size: int = 16,
-                 allow_download: bool = False) -> None:
+                 max_length: int = 512, batch_size: int = 16, allow_download: bool = False,
+                 dtype: str = "float32") -> None:
+        if dtype not in DTYPES:
+            raise ValueError(f"dtype {dtype!r} is not one of {', '.join(DTYPES)}")
         self.model_id = model_id
+        self.dtype = dtype
         self.revision = revision
         self.device = device
         self.max_length = max_length
@@ -74,7 +83,8 @@ class HFNLIJudge:
     @property
     def id(self) -> str:
         rev = (self._resolved or self.revision or "unresolved")[:12]
-        return f"hf:{self.model_id}@{rev}"
+        precision = "" if self.dtype == "float32" else f"+{self.dtype}"
+        return f"hf:{self.model_id}@{rev}{precision}"
 
     @property
     def three_way(self) -> bool:
@@ -93,23 +103,29 @@ class HFNLIJudge:
             if self._model is not None:
                 return
             try:
-                import torch  # noqa: F401
+                import torch
                 from transformers import AutoModelForSequenceClassification, AutoTokenizer
             except ImportError as e:
                 raise JudgeUnavailable(
                     "Model judges need the 'nli' extra: pip install 'verimem[nli]'"
                 ) from e
             kw = {"revision": self.revision, "local_files_only": not self.allow_download}
+            # Load straight into the precision we run in: no second copy of the weights.
+            dtype = getattr(torch, self.dtype)
+            dtype_kw = {"dtype" if _transformers_major() >= 5 else "torch_dtype": dtype}
             try:
                 tok = AutoTokenizer.from_pretrained(self.model_id, **kw)
-                model = AutoModelForSequenceClassification.from_pretrained(self.model_id, **kw)
+                model = AutoModelForSequenceClassification.from_pretrained(self.model_id, **kw,
+                                                                           **dtype_kw)
             except OSError as e:
                 raise JudgeUnavailable(
                     f"Model {self.model_id} is not available locally. Run `verimem warmup` "
                     "to download it, or construct the judge with allow_download=True."
                 ) from e
             model.eval()
-            model.to(self.device)
+            # Explicit: transformers 5 loads a float16 checkpoint as float16, transformers 4
+            # as float32, and the scores would depend on the installed version.
+            model.to(device=self.device, dtype=dtype)
             self._map_labels(model)
             self._tok, self._model = tok, model
             self._resolved = (getattr(model.config, "_commit_hash", None)
@@ -169,7 +185,7 @@ class HFNLIJudge:
             for start in range(0, len(order), self.batch_size):
                 idx = order[start : start + self.batch_size]
                 enc = self._encode([pairs[i][0] for i in idx], [pairs[i][1] for i in idx])
-                logits = self._model(**enc).logits
+                logits = self._model(**enc).logits.float()
                 if self._sigmoid:
                     for i, p in zip(idx, torch.sigmoid(logits[:, 0]).tolist(), strict=True):
                         out[i] = NLIScores(entailment=float(p))
