@@ -43,6 +43,7 @@ class Policy:
     full_source_max_chars: int = 1500
     trusted_authors: tuple[str, ...] = ("user", "document", "system")
     relevance_threshold: float = 0.5
+    relevance_coverage: bool = True
     relevance_templates: dict[str, str] = field(default_factory=lambda: {
         "en": "This text answers the question: {question}",
         "it": "Questo testo risponde alla domanda: {question}",

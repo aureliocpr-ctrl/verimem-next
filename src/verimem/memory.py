@@ -15,7 +15,7 @@ from typing import Any
 from .audit import AuditLog
 from .judges import JudgeUnavailable
 from .policy import Policy
-from .relevance import NLIRelevance, Relevance
+from .relevance import HybridRelevance, NLIRelevance, Relevance
 from .store import Store, new_id, normalize_fact
 from .text import normalize_ws
 from .types import Answer, Author, Fact, Label, Recalled, Status, Verdict, WriteResult
@@ -100,7 +100,8 @@ class Memory:
     @property
     def relevance(self) -> Relevance:
         if self._relevance is None:
-            self._relevance = NLIRelevance(self.verifier.judge, self.policy.relevance_templates)
+            model = NLIRelevance(self.verifier.judge, self.policy.relevance_templates)
+            self._relevance = HybridRelevance(model) if self.policy.relevance_coverage else model
         return self._relevance
 
     # ------------------------------------------------------------ write path
