@@ -7,7 +7,8 @@ the AUROC of S vs N and of S vs C, the share of S and N whose support passes 0.5
 the best window sits in the prefilter's ranking.
 
 Usage: python scripts/research/window_budget.py PAIRS.jsonl [PAIRS.jsonl ...] --cache FILE
-(all N and C pairs of each file plus a seeded sample of 300 S pairs).
+(all N and C pairs of each file plus a seeded sample of --s S pairs). The cache is written as
+it goes, one claim per line, so an interrupted run resumes where it stopped.
 """
 
 import argparse
@@ -56,31 +57,40 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("pairs", nargs="+", type=Path)
     ap.add_argument("--cache", type=Path, required=True)
+    ap.add_argument("--s", type=int, default=200, help="S pairs sampled per file")
     a = ap.parse_args()
     rng = random.Random(2026)
     items = []
     for path in a.pairs:
         pairs = load_pairs(path)
         s = [p for p in pairs if p.label == "S"]
-        keep = [p for p in pairs if p.label != "S"] + rng.sample(s, min(300, len(s)))
+        keep = [p for p in pairs if p.label != "S"] + rng.sample(s, min(a.s, len(s)))
         items += [(path.stem, p) for p in keep]
+    done = set()
     if a.cache.exists():
-        cache = json.loads(a.cache.read_text())
-    else:
+        done = {(r["set"], r["id"]) for r in map(json.loads, a.cache.read_text().splitlines())}
+    todo = [(name, p) for name, p in items if (name, p.id) not in done]
+    if todo:
         judge = Verifier(policy=Policy.default()).judge
-        cache = []
-        jobs = []
-        for name, p in items:
-            claim = normalize_ws(p.claim)
-            wins = ranked_windows(p.source, claim)
-            cache.append({"set": name, "id": p.id, "label": p.label, "n": len(wins)})
-            jobs += [(w, claim) for w in wins]
-        scores = [s.entailment for s in judge.score(jobs)]
-        pos = 0
-        for row in cache:
-            row["scores"] = scores[pos : pos + row["n"]]
-            pos += row["n"]
-        a.cache.write_text(json.dumps(cache))
+        with a.cache.open("a") as f:
+            for start in range(0, len(todo), 50):
+                chunk, jobs, rows = todo[start : start + 50], [], []
+                for name, p in chunk:
+                    claim = normalize_ws(p.claim)
+                    wins = ranked_windows(p.source, claim)
+                    rows.append({"set": name, "id": p.id, "label": p.label, "n": len(wins)})
+                    jobs += [(w, claim) for w in wins]
+                scores = [x.entailment for x in judge.score(jobs)]
+                pos = 0
+                for row in rows:
+                    row["scores"] = scores[pos : pos + row["n"]]
+                    pos += row["n"]
+                    f.write(json.dumps(row) + "\n")
+                f.flush()
+                print(f"{start + len(chunk)}/{len(todo)} claims scored", flush=True)
+    wanted = {(name, p.id) for name, p in items}
+    cache = [r for r in map(json.loads, a.cache.read_text().splitlines())
+             if (r["set"], r["id"]) in wanted]
     for name in sorted({r["set"] for r in cache}):
         rows = [r for r in cache if r["set"] == name]
         print(f"\n{name}: {sum(r['label'] == 'S' for r in rows)} S, "

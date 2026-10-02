@@ -19,7 +19,10 @@ Rules, fixed before running verimem on these data:
 - Sources: the article (Summary), the passages without the question (QA), the business data
   as JSON text (Data2txt).
 - Splits: RAGTruth's train split becomes "dev" (for calibration, sampled), its test split
-  "test" (for reporting, complete).
+  "test" (for reporting).
+- With --max-s, each file keeps every N and C pair and a seeded random sample of its S
+  pairs: rates per label and AUROC do not depend on how many S pairs are kept, the time to
+  judge them does.
 
 Usage:
     python scripts/external/ragtruth_pairs.py --data DIR_WITH_JSONL --out DIR [--dev-responses 400]
@@ -81,6 +84,7 @@ def main() -> None:
     ap.add_argument("--dev-responses", type=int, default=400,
                     help="responses sampled per task from the train split")
     ap.add_argument("--seed", type=int, default=2026)
+    ap.add_argument("--max-s", type=int, default=0, help="keep at most this many S pairs per file")
     a = ap.parse_args()
     sources = {}
     for line in (a.data / "source_info.jsonl").read_text(encoding="utf-8").splitlines():
@@ -89,14 +93,20 @@ def main() -> None:
     responses = [json.loads(line) for line in
                  (a.data / "response.jsonl").read_text(encoding="utf-8").splitlines()]
     a.out.mkdir(parents=True, exist_ok=True)
-    rng = random.Random(a.seed)
     for task, name in TASKS.items():
         mine = [r for r in responses if sources[r["source_id"]]["task_type"] == task]
         train = [r for r in mine if r["split"] == "train"]
-        splits = {"dev": rng.sample(train, min(a.dev_responses, len(train))),
-                  "test": [r for r in mine if r["split"] == "test"]}
+        # One generator per draw, so that no option changes another file's sample.
+        dev = random.Random(f"{a.seed}-{name}-dev").sample(train,
+                                                             min(a.dev_responses, len(train)))
+        splits = {"dev": dev, "test": [r for r in mine if r["split"] == "test"]}
         for split, rows in splits.items():
             pairs = [p for r in rows for p in pairs_for(r, sources[r["source_id"]])]
+            supported = [p for p in pairs if p["label"] == "S"]
+            if a.max_s and len(supported) > a.max_s:
+                draw = random.Random(f"{a.seed}-{name}-{split}-s")
+                keep = {id(p) for p in draw.sample(supported, a.max_s)}
+                pairs = [p for p in pairs if p["label"] != "S" or id(p) in keep]
             path = a.out / f"ragtruth-{name}-{split}.jsonl"
             with path.open("w", encoding="utf-8") as f:
                 for p in pairs:

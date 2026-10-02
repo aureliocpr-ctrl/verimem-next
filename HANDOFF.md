@@ -59,7 +59,11 @@ disegna su un insieme di dati e si giudica su un altro scritto prima.
    manuale di consegna, messaggi di contatto, post) non è in questo repository pubblico: è
    stato tolto dalla storia prima del primo push e consegnato a parte. Se lo vuoi qui, o in
    un repository privato, si aggiunge con un commit.
-2. **PyPI**: pubblicare questa versione con il nome `verimem` (oggi installa la 0.7.x)?
+2. **PyPI**: pubblicare questa versione con il nome `verimem`? Oggi quel nome installa la 0.7.x,
+   che usi ogni giorno per la continuità delle sessioni (`verimem save`, `tip`, `recent`,
+   `digest`, `handoff`, gli hook): la 0.9 non ha quei comandi, quindi un `pip install -U
+   verimem` sul tuo PC li romperebbe. Prima di pubblicare: tenere la 0.7 in un ambiente suo,
+   oppure scegliere un nome diverso per uno dei due.
 3. Più avanti: rinominare questo repository in `verimem` e archiviare il vecchio?
 
 ## Problemi noti
