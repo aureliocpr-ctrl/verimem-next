@@ -54,7 +54,8 @@ def test_remember_and_recall_through_mcp():
 def test_remember_must_be_told_who_wrote_the_source():
     # A default author would make web text the agent forgot to label count as the user's.
     tools = {t.name: t for t in asyncio.run(build_server(memory()).list_tools())}
-    schema = tools["remember"].inputSchema
+    tool = tools["remember"]
+    schema = getattr(tool, "input_schema", None) or tool.inputSchema  # mcp 2.x, mcp 1.x
     assert "source_author" in schema["required"]
     assert set(schema["properties"]["source_author"]["enum"]) == {
         "user", "document", "system", "agent", "tool", "web"}
