@@ -222,5 +222,5 @@ def test_calibrate_takes_a_loss_target_or_an_admission_cap(tmp_path, capsys):
 
 
 def test_the_judge_precision_can_be_overridden_on_the_command_line(capsys):
-    _, out = run(capsys, "doctor", "--judge-dtype", "bfloat16", "--json")
+    _, out = run(capsys, "doctor", "--judge", "lexical", "--judge-dtype", "bfloat16", "--json")
     assert json.loads(out)["judge_dtype"] == "bfloat16"
