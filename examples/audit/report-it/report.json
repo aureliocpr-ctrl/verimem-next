@@ -1,0 +1,402 @@
+{
+  "created_at": "2026-10-02 12:38 UTC",
+  "verimem_version": "0.9.0.dev0",
+  "judge": "hf:MoritzLaurer/bge-m3-zeroshot-v2.0-c@705510dfe0f3",
+  "policy": "0.9.0-provisional",
+  "total": 32,
+  "counts": {
+    "supported": 13,
+    "not_supported": 15,
+    "contradicted": 0,
+    "uncertain": 2,
+    "unjudged": 2
+  },
+  "unsupported_share": 0.5,
+  "unsupported_ci": [
+    0.33153851227173764,
+    0.6684614877282624
+  ],
+  "numeric_violations": 7,
+  "rows": [
+    {
+      "id": "crm-01",
+      "memory": "Paolo Ferri è il responsabile acquisti di Termoidraulica Ferri.",
+      "source": "Cliente: Buongiorno, sono Paolo Ferri, responsabile acquisti di Termoidraulica Ferri. Vi chiamo perché il contratto di manutenzione scade a fine marzo e vorremmo rinnovarlo, ma con un canone più basso.",
+      "verdict": "supported",
+      "support": 0.9961,
+      "contradiction": null,
+      "reason": "supported by the source (p=1.00)",
+      "evidence": "Cliente: Buongiorno, sono Paolo Ferri, responsabile acquisti di Termoidraulica Ferri.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-02",
+      "memory": "Il contratto di manutenzione di Termoidraulica Ferri scade a fine marzo.",
+      "source": "Cliente: Buongiorno, sono Paolo Ferri, responsabile acquisti di Termoidraulica Ferri. Vi chiamo perché il contratto di manutenzione scade a fine marzo e vorremmo rinnovarlo, ma con un canone più basso.",
+      "verdict": "supported",
+      "support": 0.9932,
+      "contradiction": null,
+      "reason": "supported by the source (p=0.99)",
+      "evidence": "Cliente: Buongiorno, sono Paolo Ferri, responsabile acquisti di Termoidraulica Ferri. Vi chiamo perché il contratto di manutenzione scade a fine marzo e vorremmo rinnovarlo, ma con un canone più basso.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-03",
+      "memory": "Termoidraulica Ferri vuole disdire il contratto di manutenzione.",
+      "source": "Cliente: Buongiorno, sono Paolo Ferri, responsabile acquisti di Termoidraulica Ferri. Vi chiamo perché il contratto di manutenzione scade a fine marzo e vorremmo rinnovarlo, ma con un canone più basso.",
+      "verdict": "not_supported",
+      "support": 0.0064,
+      "contradiction": null,
+      "reason": "the source does not state this (best support p=0.01)",
+      "evidence": "Vi chiamo perché il contratto di manutenzione scade a fine marzo e vorremmo rinnovarlo, ma con un canone più basso.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-04",
+      "memory": "Termoidraulica Ferri chiede uno sconto del 15% sul canone.",
+      "source": "Cliente: Buongiorno, sono Paolo Ferri, responsabile acquisti di Termoidraulica Ferri. Vi chiamo perché il contratto di manutenzione scade a fine marzo e vorremmo rinnovarlo, ma con un canone più basso.",
+      "verdict": "not_supported",
+      "support": 0.0014,
+      "contradiction": null,
+      "reason": "quantities not in the source: 15%",
+      "evidence": "Cliente: Buongiorno, sono Paolo Ferri, responsabile acquisti di Termoidraulica Ferri.",
+      "missing_quantities": [
+        "15%"
+      ]
+    },
+    {
+      "id": "crm-05",
+      "memory": "Termoidraulica Ferri ha 12 tecnici sul campo.",
+      "source": "Paolo Ferri: Al momento abbiamo 12 tecnici sul campo e ognuno usa la vostra app sul tablet. Entro l'estate ne assumiamo altri tre.",
+      "verdict": "uncertain",
+      "support": 0.2791,
+      "contradiction": null,
+      "reason": "weak support (p=0.28): not enough to verify",
+      "evidence": "Paolo Ferri: Al momento abbiamo 12 tecnici sul campo e ognuno usa la vostra app sul tablet. Entro l'estate ne assumiamo altri tre.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-06",
+      "memory": "Termoidraulica Ferri avrà 15 tecnici entro l'estate.",
+      "source": "Paolo Ferri: Al momento abbiamo 12 tecnici sul campo e ognuno usa la vostra app sul tablet. Entro l'estate ne assumiamo altri tre.",
+      "verdict": "not_supported",
+      "support": 0.0125,
+      "contradiction": null,
+      "reason": "quantities not in the source: 15",
+      "evidence": "Paolo Ferri: Al momento abbiamo 12 tecnici sul campo e ognuno usa la vostra app sul tablet. Entro l'estate ne assumiamo altri tre.",
+      "missing_quantities": [
+        "15"
+      ]
+    },
+    {
+      "id": "crm-07",
+      "memory": "I tecnici di Termoidraulica Ferri usano l'app sullo smartphone.",
+      "source": "Paolo Ferri: Al momento abbiamo 12 tecnici sul campo e ognuno usa la vostra app sul tablet. Entro l'estate ne assumiamo altri tre.",
+      "verdict": "not_supported",
+      "support": 0.1405,
+      "contradiction": null,
+      "reason": "the source does not state this (best support p=0.14)",
+      "evidence": "Paolo Ferri: Al momento abbiamo 12 tecnici sul campo e ognuno usa la vostra app sul tablet.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-08",
+      "memory": "Paolo Ferri si è lamentato di un ritardo di due giorni del tecnico.",
+      "source": "Paolo Ferri: L'ultima volta il vostro tecnico è arrivato con due giorni di ritardo e abbiamo dovuto fermare un cantiere. Non deve ripetersi.",
+      "verdict": "supported",
+      "support": 0.9878,
+      "contradiction": null,
+      "reason": "supported by the source (p=0.99)",
+      "evidence": "Paolo Ferri: L'ultima volta il vostro tecnico è arrivato con due giorni di ritardo e abbiamo dovuto fermare un cantiere.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-09",
+      "memory": "Il ritardo del tecnico è costato a Termoidraulica Ferri 4.000 euro.",
+      "source": "Paolo Ferri: L'ultima volta il vostro tecnico è arrivato con due giorni di ritardo e abbiamo dovuto fermare un cantiere. Non deve ripetersi.",
+      "verdict": "not_supported",
+      "support": 0.0006,
+      "contradiction": null,
+      "reason": "quantities not in the source: 4.000",
+      "evidence": "Paolo Ferri: L'ultima volta il vostro tecnico è arrivato con due giorni di ritardo e abbiamo dovuto fermare un cantiere. Non deve ripetersi.",
+      "missing_quantities": [
+        "4.000"
+      ]
+    },
+    {
+      "id": "crm-10",
+      "memory": "La firma con lo Studio Sala & Partners è fissata per giovedì 20 febbraio alle 15:00.",
+      "source": "Email di Giulia Sala (ufficio legale, Studio Sala & Partners), 14 febbraio: confermo che la riunione per la firma è spostata a giovedì 20 febbraio alle 15:00, presso la nostra sede di via Solferino.",
+      "verdict": "supported",
+      "support": 0.9312,
+      "contradiction": null,
+      "reason": "supported by the source (p=0.93)",
+      "evidence": "Email di Giulia Sala (ufficio legale, Studio Sala & Partners), 14 febbraio: confermo che la riunione per la firma è spostata a giovedì 20 febbraio alle 15:00, presso la nostra sede di via Solferino.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-11",
+      "memory": "La riunione per la firma con lo Studio Sala & Partners si terrà online.",
+      "source": "Email di Giulia Sala (ufficio legale, Studio Sala & Partners), 14 febbraio: confermo che la riunione per la firma è spostata a giovedì 20 febbraio alle 15:00, presso la nostra sede di via Solferino.",
+      "verdict": "not_supported",
+      "support": 0.001,
+      "contradiction": null,
+      "reason": "the source does not state this (best support p=0.00)",
+      "evidence": "Email di Giulia Sala (ufficio legale, Studio Sala & Partners), 14 febbraio: confermo che la riunione per la firma è spostata a giovedì 20 febbraio alle 15:00, presso la nostra sede di via Solferino.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-12",
+      "memory": "Giulia Sala è la socia fondatrice dello Studio Sala & Partners.",
+      "source": "Email di Giulia Sala (ufficio legale, Studio Sala & Partners), 14 febbraio: confermo che la riunione per la firma è spostata a giovedì 20 febbraio alle 15:00, presso la nostra sede di via Solferino.",
+      "verdict": "not_supported",
+      "support": 0.0042,
+      "contradiction": null,
+      "reason": "the source does not state this (best support p=0.00)",
+      "evidence": "Email di Giulia Sala (ufficio legale, Studio Sala & Partners), 14 febbraio: confermo che la riunione per la firma è spostata a giovedì 20 febbraio alle 15:00, presso la nostra sede di via Solferino.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-13",
+      "memory": "Ortofrutta Villa gestisce gli ordini con fogli Excel.",
+      "source": "Nota della chiamata con Marta Villa (Ortofrutta Villa): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere. Budget non ancora definito.",
+      "verdict": "supported",
+      "support": 0.9927,
+      "contradiction": null,
+      "reason": "supported by the source (p=0.99)",
+      "evidence": "Nota della chiamata con Marta Villa (Ortofrutta Villa): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere. Budget non ancora definito.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-14",
+      "memory": "Ortofrutta Villa ha un budget di 20.000 euro per il modulo magazzino.",
+      "source": "Nota della chiamata con Marta Villa (Ortofrutta Villa): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere. Budget non ancora definito.",
+      "verdict": "not_supported",
+      "support": 0.0006,
+      "contradiction": null,
+      "reason": "quantities not in the source: 20.000",
+      "evidence": "Nota della chiamata con Marta Villa (Ortofrutta Villa): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere.",
+      "missing_quantities": [
+        "20.000"
+      ]
+    },
+    {
+      "id": "crm-15",
+      "memory": "Marta Villa ha chiesto una demo del modulo magazzino.",
+      "source": "Nota della chiamata con Marta Villa (Ortofrutta Villa): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere. Budget non ancora definito.",
+      "verdict": "supported",
+      "support": 0.9858,
+      "contradiction": null,
+      "reason": "supported by the source (p=0.99)",
+      "evidence": "Nota della chiamata con Marta Villa (Ortofrutta Villa): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere. Budget non ancora definito.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-16",
+      "memory": "Ortofrutta Villa ha già scelto il nostro modulo magazzino.",
+      "source": "Nota della chiamata con Marta Villa (Ortofrutta Villa): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere. Budget non ancora definito.",
+      "verdict": "not_supported",
+      "support": 0.0006,
+      "contradiction": null,
+      "reason": "the source does not state this (best support p=0.00)",
+      "evidence": "Nota della chiamata con Marta Villa (Ortofrutta Villa): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-17",
+      "memory": "Marta Villa preferisce essere contattata la mattina.",
+      "source": "",
+      "verdict": "unjudged",
+      "support": 0.0,
+      "contradiction": null,
+      "reason": "no source was given, so nothing can be verified",
+      "evidence": "",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-18",
+      "memory": "Logistica Po non può usare soluzioni cloud per una regola del gruppo.",
+      "source": "Davide (IT di Logistica Po): il server lo teniamo in casa, niente cloud, è una regola del gruppo. Abbiamo Windows Server 2019.",
+      "verdict": "supported",
+      "support": 0.8994,
+      "contradiction": null,
+      "reason": "supported by the source (p=0.90)",
+      "evidence": "Davide (IT di Logistica Po): il server lo teniamo in casa, niente cloud, è una regola del gruppo.",
+      "missing_quantities": []
+    },
+    {
+      "id": "crm-19",
+      "memory": "Logistica Po usa Windows Server 2022.",
+      "source": "Davide (IT di Logistica Po): il server lo teniamo in casa, niente cloud, è una regola del gruppo. Abbiamo Windows Server 2019.",
+      "verdict": "not_supported",
+      "support": 0.008,
+      "contradiction": null,
+      "reason": "quantities not in the source: 2022",
+      "evidence": "Davide (IT di Logistica Po): il server lo teniamo in casa, niente cloud, è una regola del gruppo.",
+      "missing_quantities": [
+        "2022"
+      ]
+    },
+    {
+      "id": "crm-20",
+      "memory": "Davide è il responsabile IT di Logistica Po.",
+      "source": "Davide (IT di Logistica Po): il server lo teniamo in casa, niente cloud, è una regola del gruppo. Abbiamo Windows Server 2019.",
+      "verdict": "supported",
+      "support": 0.8799,
+      "contradiction": null,
+      "reason": "supported by the source (p=0.88)",
+      "evidence": "Davide (IT di Logistica Po): il server lo teniamo in casa, niente cloud, è una regola del gruppo.",
+      "missing_quantities": []
+    },
+    {
+      "id": "pa-01",
+      "memory": "The user is flying to Lisbon on the 14th for a conference.",
+      "source": "User: I'm flying to Lisbon on the 14th for the conference, back on the 18th. Can you remind me to book the airport transfer?",
+      "verdict": "supported",
+      "support": 0.9971,
+      "contradiction": null,
+      "reason": "supported by the source (p=1.00)",
+      "evidence": "User: I'm flying to Lisbon on the 14th for the conference, back on the 18th.",
+      "missing_quantities": []
+    },
+    {
+      "id": "pa-02",
+      "memory": "The user is attending the Lisbon conference with a colleague.",
+      "source": "User: I'm flying to Lisbon on the 14th for the conference, back on the 18th. Can you remind me to book the airport transfer?",
+      "verdict": "not_supported",
+      "support": 0.0136,
+      "contradiction": null,
+      "reason": "the source does not state this (best support p=0.01)",
+      "evidence": "User: I'm flying to Lisbon on the 14th for the conference, back on the 18th.",
+      "missing_quantities": []
+    },
+    {
+      "id": "pa-03",
+      "memory": "The user returns from Lisbon on the 19th.",
+      "source": "User: I'm flying to Lisbon on the 14th for the conference, back on the 18th. Can you remind me to book the airport transfer?",
+      "verdict": "not_supported",
+      "support": 0.0055,
+      "contradiction": null,
+      "reason": "quantities not in the source: 19th",
+      "evidence": "User: I'm flying to Lisbon on the 14th for the conference, back on the 18th.",
+      "missing_quantities": [
+        "19th"
+      ]
+    },
+    {
+      "id": "pa-04",
+      "memory": "The user wants a reminder to book the airport transfer.",
+      "source": "User: I'm flying to Lisbon on the 14th for the conference, back on the 18th. Can you remind me to book the airport transfer?",
+      "verdict": "supported",
+      "support": 0.9902,
+      "contradiction": null,
+      "reason": "supported by the source (p=0.99)",
+      "evidence": "User: I'm flying to Lisbon on the 14th for the conference, back on the 18th. Can you remind me to book the airport transfer?",
+      "missing_quantities": []
+    },
+    {
+      "id": "pa-05",
+      "memory": "The user does not want meetings scheduled before 9:30 on weekdays.",
+      "source": "User: My daughter Sofia starts primary school in September, so mornings are going to be chaos. Don't schedule anything before 9:30 on weekdays.",
+      "verdict": "uncertain",
+      "support": 0.2368,
+      "contradiction": null,
+      "reason": "weak support (p=0.24): not enough to verify",
+      "evidence": "User: My daughter Sofia starts primary school in September, so mornings are going to be chaos. Don't schedule anything before 9:30 on weekdays.",
+      "missing_quantities": []
+    },
+    {
+      "id": "pa-06",
+      "memory": "The user's daughter Sofia is six years old.",
+      "source": "User: My daughter Sofia starts primary school in September, so mornings are going to be chaos. Don't schedule anything before 9:30 on weekdays.",
+      "verdict": "not_supported",
+      "support": 0.0149,
+      "contradiction": null,
+      "reason": "quantities not in the source: six",
+      "evidence": "User: My daughter Sofia starts primary school in September, so mornings are going to be chaos. Don't schedule anything before 9:30 on weekdays.",
+      "missing_quantities": [
+        "six"
+      ]
+    },
+    {
+      "id": "pa-07",
+      "memory": "The user's daughter Sofia starts primary school in September.",
+      "source": "User: My daughter Sofia starts primary school in September, so mornings are going to be chaos. Don't schedule anything before 9:30 on weekdays.",
+      "verdict": "supported",
+      "support": 0.9971,
+      "contradiction": null,
+      "reason": "supported by the source (p=1.00)",
+      "evidence": "User: My daughter Sofia starts primary school in September, so mornings are going to be chaos. Don't schedule anything before 9:30 on weekdays.",
+      "missing_quantities": []
+    },
+    {
+      "id": "pa-08",
+      "memory": "The user is vegetarian but occasionally eats fish.",
+      "source": "User: I switched to a vegetarian diet last month, but I still eat fish now and then.",
+      "verdict": "supported",
+      "support": 0.9873,
+      "contradiction": null,
+      "reason": "supported by the source (p=0.99)",
+      "evidence": "User: I switched to a vegetarian diet last month, but I still eat fish now and then.",
+      "missing_quantities": []
+    },
+    {
+      "id": "pa-09",
+      "memory": "The user is strictly vegan.",
+      "source": "User: I switched to a vegetarian diet last month, but I still eat fish now and then.",
+      "verdict": "not_supported",
+      "support": 0.0009,
+      "contradiction": null,
+      "reason": "the source does not state this (best support p=0.00)",
+      "evidence": "User: I switched to a vegetarian diet last month, but I still eat fish now and then.",
+      "missing_quantities": []
+    },
+    {
+      "id": "pa-10",
+      "memory": "The user's team holds its standup at 10:00.",
+      "source": "User: Our team moved standup from 9:00 to 10:00 because half of us are on Lisbon time now.",
+      "verdict": "supported",
+      "support": 0.8306,
+      "contradiction": null,
+      "reason": "supported by the source (p=0.83)",
+      "evidence": "User: Our team moved standup from 9:00 to 10:00 because half of us are on Lisbon time now.",
+      "missing_quantities": []
+    },
+    {
+      "id": "pa-11",
+      "memory": "The user's team is fully remote.",
+      "source": "User: Our team moved standup from 9:00 to 10:00 because half of us are on Lisbon time now.",
+      "verdict": "not_supported",
+      "support": 0.0066,
+      "contradiction": null,
+      "reason": "the source does not state this (best support p=0.01)",
+      "evidence": "User: Our team moved standup from 9:00 to 10:00 because half of us are on Lisbon time now.",
+      "missing_quantities": []
+    },
+    {
+      "id": "pa-12",
+      "memory": "The user is allergic to peanuts.",
+      "source": "",
+      "verdict": "unjudged",
+      "support": 0.0,
+      "contradiction": null,
+      "reason": "no source was given, so nothing can be verified",
+      "evidence": "",
+      "missing_quantities": []
+    }
+  ],
+  "calibration": {
+    "verifier": {
+      "status": "provisional",
+      "dataset": "datasets/review-cases.csv (40 pairs written by Claude)",
+      "note": "support 0.5 / uncertain 0.2 separate the review cases perfectly; to be replaced by a calibration on 200+ real pairs (CHECKLIST phase 8)"
+    },
+    "relevance": {
+      "status": "provisional",
+      "dataset": "datasets/qa-mini.json (50 questions written by Claude)",
+      "template": "en/it 'This text answers the question: ...'",
+      "threshold": 0.4,
+      "measured": "17/25 answerable questions answered with the right fact, 8 wrong abstentions; 25/25 unanswerable questions abstained, 0 false answers (verimem eval-ask datasets/qa-mini.json)"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "groups": {
+    "flagged": {
+      "memories": 15,
+      "reviewed": 15,
+      "not_stated": 15
+    },
+    "uncertain": {
+      "memories": 2,
+      "reviewed": 2,
+      "not_stated": 0
+    },
+    "verified": {
+      "memories": 13,
+      "reviewed": 13,
+      "not_stated": 1
+    }
+  },
+  "estimate": 0.5333333333333333,
+  "ci": [
+    0.5333333333333333,
+    0.5333333333333333
+  ],
+  "missing_groups": []
+}

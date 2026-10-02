@@ -1,0 +1,80 @@
+# Memory reliability report
+
+## Summary
+
+- **32** memories checked against the source they were extracted from.
+- **13** supported by their source.
+- **15** not supported by their source: **50% (33%-67%)** of the 30 that could be judged.
+- **7** add a number, amount or date the source does not contain.
+- **2** weakly supported (left for review, not counted as errors).
+- **2** had no source and could not be checked.
+
+## What this means
+
+A memory is *not supported* when the text it came from does not state it. Such memories are usually details an LLM added while extracting facts: plausible, often true-sounding, and served back later as if the user had said them.
+
+## Examples of unsupported memories
+
+- **Il ritardo del tecnico è costato a Termoidraulica Ferri 4.000 euro.**  
+  numbers or dates not in the source: 4.000  
+  _closest passage in the source:_ “Paolo Ferri: L'ultima volta il vostro tecnico è arrivato con due giorni di ritardo e abbiamo dovuto fermare un cantiere. Non deve ripetersi.”
+
+- **Ortofrutta Villa ha un budget di 20.000 euro per il modulo magazzino.**  
+  numbers or dates not in the source: 20.000  
+  _closest passage in the source:_ “Nota della chiamata con Marta Villa (Ortofrutta Villa): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere.”
+
+- **Ortofrutta Villa ha già scelto il nostro modulo magazzino.**  
+  the source does not say it (best support p=0.00)  
+  _closest passage in the source:_ “Nota della chiamata con Marta Villa (Ortofrutta Villa): gestiscono ancora gli ordini con fogli Excel e vorrebbero una demo del modulo magazzino prima di decidere.”
+
+- **The user is strictly vegan.**  
+  the source does not say it (best support p=0.00)  
+  _closest passage in the source:_ “User: I switched to a vegetarian diet last month, but I still eat fish now and then.”
+
+- **La riunione per la firma con lo Studio Sala & Partners si terrà online.**  
+  the source does not say it (best support p=0.00)  
+  _closest passage in the source:_ “Email di Giulia Sala (ufficio legale, Studio Sala & Partners), 14 febbraio: confermo che la riunione per la firma è spostata a giovedì 20 febbraio alle 15:00, presso la nostra sede di via Solferino.”
+
+- **Termoidraulica Ferri chiede uno sconto del 15% sul canone.**  
+  numbers or dates not in the source: 15%  
+  _closest passage in the source:_ “Cliente: Buongiorno, sono Paolo Ferri, responsabile acquisti di Termoidraulica Ferri.”
+
+- **Giulia Sala è la socia fondatrice dello Studio Sala & Partners.**  
+  the source does not say it (best support p=0.00)  
+  _closest passage in the source:_ “Email di Giulia Sala (ufficio legale, Studio Sala & Partners), 14 febbraio: confermo che la riunione per la firma è spostata a giovedì 20 febbraio alle 15:00, presso la nostra sede di via Solferino.”
+
+- **The user returns from Lisbon on the 19th.**  
+  numbers or dates not in the source: 19th  
+  _closest passage in the source:_ “User: I'm flying to Lisbon on the 14th for the conference, back on the 18th.”
+
+- **Termoidraulica Ferri vuole disdire il contratto di manutenzione.**  
+  the source does not say it (best support p=0.01)  
+  _closest passage in the source:_ “Vi chiamo perché il contratto di manutenzione scade a fine marzo e vorremmo rinnovarlo, ma con un canone più basso.”
+
+- **The user's team is fully remote.**  
+  the source does not say it (best support p=0.01)  
+  _closest passage in the source:_ “User: Our team moved standup from 9:00 to 10:00 because half of us are on Lisbon time now.”
+
+## Limits of this report
+
+Verdicts come from an automatic judge (hf:MoritzLaurer/bge-m3-zeroshot-v2.0-c@705510dfe0f3), with policy 0.9.0-provisional. The judge makes mistakes in both directions; its calibration is described below. Before acting on the numbers, review a sample of the flagged rows (`review.csv` has a column for it). The judge checks consistency with the source, not truth: a wrong source makes a wrong memory look supported.
+
+`review.csv` lists every memory that could be judged with its source, grouped by verdict (flagged first) and in random order within each group. Read a few from the top of each group, write yes or no in `stated_by_source`, then run `verimem audit-review` on this folder for an estimate checked by a person.
+
+### Judge calibration
+
+**verifier**
+
+- status: provisional
+- dataset: datasets/review-cases.csv (40 pairs written by Claude)
+- note: support 0.5 / uncertain 0.2 separate the review cases perfectly; to be replaced by a calibration on 200+ real pairs (CHECKLIST phase 8)
+
+**relevance**
+
+- status: provisional
+- dataset: datasets/qa-mini.json (50 questions written by Claude)
+- template: en/it 'This text answers the question: ...'
+- threshold: 0.4
+- measured: 17/25 answerable questions answered with the right fact, 8 wrong abstentions; 25/25 unanswerable questions abstained, 0 false answers (verimem eval-ask datasets/qa-mini.json)
+
+Generated by verimem 0.9.0.dev0 on 2026-10-02 12:37 UTC.

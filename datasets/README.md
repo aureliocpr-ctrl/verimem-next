@@ -8,9 +8,11 @@ Labels: `S` = the source supports the claim, `N` = plausible but not stated by t
 |---|---|---|---|
 | `review-cases.csv` | 40 (15 S, 19 N, 6 C), IT/EN | Claude, during the independent review of the old verimem (2026-10-02) | regression: these are the cases the old judge failed |
 | `qa-mini.json` | 20 facts, 50 questions (25 answerable), IT/EN | Claude (2026-10-02) | choosing the relevance threshold of `Memory.ask` |
+| `qa-heldout.json` | 20 facts, 50 questions (25 answerable), IT/EN | Claude (2026-10-02), before any change it measures | checking that a change to `ask` designed on `qa-mini.json` generalises |
 | `truthfulqa-pairs.jsonl` | 582 (282 S, 300 N), EN | TruthfulQA authors, reshaped into pairs (see below) | an external check written by people, not by the model under test |
 
-`review-cases.csv` and `qa-mini.json` were written by the same model that built the verifier:
+`review-cases.csv`, `qa-mini.json` and `qa-heldout.json` were written by the same model that
+built the verifier:
 they catch regressions, they prove nothing about real-world performance. TruthfulQA is
 written by people but is not agent memory. Real evidence comes from pairs taken from real use
 and labelled by a person before seeing any score (CHECKLIST, phase 8).

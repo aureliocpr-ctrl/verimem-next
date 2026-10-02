@@ -19,95 +19,93 @@ Legenda: `[x]` fatto · `[ ]` da fare · `[~]` in corso · `[!]` bloccato (motiv
   Fatto quando: `pip install -e ".[dev]"` va a buon fine e `python -c "import verimem"` funziona.
 - [x] **Documenti di base.** `docs/DESIGN.md`, ADR 0001-0009, questa checklist,
   `HANDOFF.md`, `CLAUDE.md`, `docs/BUSINESS.md`.
-  Fatto quando: i file esistono e si rimandano a vicenda.
-- [~] **CI.** (workflow scritto, da verificare al primo push) GitHub Actions: `ruff check` e `pytest -m "not model"` su Linux e Windows,
-  Python 3.10 e 3.12, senza scaricare modelli.
+- [~] **CI.** Workflow scritto (`.github/workflows/ci.yml`: `ruff check` e
+  `pytest -m "not model"` su Linux e Windows, Python 3.10 e 3.12, senza modelli).
   Fatto quando: il primo push su GitHub ha la CI verde.
-- [!] **Repository su GitHub.** Bloccato: l'integrazione di questa sessione non può creare
-  repository. Aurelio crea `aureliocpr-ctrl/verimem-next` vuoto e dà accesso all'app Claude.
+- [!] **Repository su GitHub.** Bloccato: l'integrazione della sessione cloud non può creare
+  repository (errore 403). Aurelio crea `aureliocpr-ctrl/verimem-next` vuoto e dà accesso
+  all'app Claude. Prima del primo push va deciso se `docs/BUSINESS.md` (prezzi e strategia)
+  può essere pubblico (vedi HANDOFF, decisioni aperte).
   Fatto quando: `git push -u origin main` riesce.
 
 ## Fase 1 — Il verificatore
 
-- [x] **Testo** (`text.py`): frasi con offset (italiano e inglese, abbreviazioni, decimali,
-  righe di chat, elenchi), normalizzazione, lingua (it/en/und), token di contenuto.
-  Fatto quando: `pytest tests/test_text.py` passa.
-- [x] **Quantità** (`numbers.py`): cifre, numeri in parole IT/EN, migliaia/decimali ambigui
-  in entrambi i sensi, percentuali, scale (k, M, mila, milioni), date con mesi IT/EN, ore.
-  Fatto quando: `pytest tests/test_numbers.py` passa, inclusi i casi della revisione
-  ("1,520" contro "1,250", "1000" contro "100", un "40%" mai detto, "tre" contro "3").
-- [x] **Giudici** (`judges/`): protocollo `Judge`; `HFNLIJudge` con mappatura delle
-  etichette per nome esatto e controllo d'orientamento al caricamento; `LexicalJudge`
-  come linea di base, mai abilitato a verificare.
-  Fatto quando: test con giudice finto passano; il test `model` con bge-m3 passa.
-- [x] **Policy** (`policy.py`, `policies/default.json`): soglie per lingua, versione,
-  provenienza della calibrazione.
-  Fatto quando: `pytest tests/test_policy.py` passa.
-- [x] **Verificatore** (`verifier.py`): finestre, prefiltro, veto sulle quantità, decisione,
-  evidenza con offset, `check_many` in un'unica chiamata al giudice.
-  Fatto quando: test con giudice finto passano, e con bge-m3 vero i 34 casi veri/aggiunte
-  della revisione danno AUROC 1,00 (lo stesso numero del bake-off).
+- [x] **Testo** (`text.py`): frasi con offset, normalizzazione, lingua, token di contenuto,
+  riconoscimento delle domande. `pytest tests/test_text.py`.
+- [x] **Quantità** (`numbers.py`): cifre, numeri in parole IT/EN, separatori ambigui, scale,
+  date, ore. `pytest tests/test_numbers.py`.
+- [x] **Giudici** (`judges/`): `HFNLIJudge` (etichette per nome, controllo d'orientamento),
+  `LexicalJudge` mai abilitato a verificare. `VERIMEM_TEST_MODELS=1 pytest -m model`.
+- [x] **Policy** (`policy.py`, `policies/default.json`). `pytest tests/test_policy.py`.
+- [x] **Verificatore** (`verifier.py`): finestre (mai solo domande), prefiltro, veto sulle
+  quantità, controllo del contesto, evidenza con offset, `check_many` in una chiamata.
+  Con bge-m3: AUROC 1,000 sui 40 casi della revisione (`docs/eval/review-cases.md`).
 
 ## Fase 2 — La memoria
 
-- [x] **Store** (`store.py`): schema v1, migrazioni, FTS5, transazioni, id ordinabili nel tempo.
-- [x] **Audit** (`audit.py`): catena di hash, verifica, esportazione JSONL; solo hash, mai testo.
-  Fatto quando: un test di manomissione trova la riga alterata.
-- [x] **Memory** (`memory.py`): `remember` (fiducia nella fonte, verifica, stato,
-  supersessione per `subject`), `get`, `history`, `review`, `forget`, `stats`.
-- [x] **Invarianti come test**: `verified` solo con giudice-modello o revisione umana; la
-  mappatura verdetto→stato sta in una sola funzione; `forget` non lascia testo nel database;
-  la catena resta valida dopo `forget`.
-  Fatto quando: `pytest tests/test_memory.py tests/test_invariants.py` passa.
+- [x] **Store** (`store.py`): SQLite + FTS5 (Porter per l'inglese), transazioni,
+  cancellazione fisica.
+- [x] **Audit** (`audit.py`): catena di hash, solo impronte HMAC, verifica ed esportazione.
+- [x] **Memory** (`memory.py`): un solo percorso di scrittura, `status_for` unica mappatura,
+  supersessione per `subject`, revisione umana, `forget`.
+- [x] **Invarianti come test**, falsificati con mutazioni: `pytest tests/test_invariants.py`.
 
 ## Fase 3 — Lettura e astensione
 
-- [ ] **recall**: BM25 su FTS5, filtro per stato (default solo `verified`), evidenza e
-  provenienza in ogni risultato.
-- [ ] **Pertinenza** (`relevance.py`): con lo stesso modello NLI e un modello di ipotesi
-  IT/EN; interfaccia aperta ad altri modelli.
-- [ ] **ask**: risponde con i fatti pertinenti o si astiene, con il motivo.
-- [ ] **Misura dell'astensione** su `datasets/qa-mini.jsonl` (domande con e senza risposta).
-  Fatto quando: `verimem eval-ask datasets/qa-mini.jsonl` stampa astensioni giuste/sbagliate
-  e la soglia in policy viene da lì.
+- [x] **recall**: FTS5, solo `verified` per default, evidenza e provenienza.
+- [x] **Pertinenza** (`relevance.py`): lo stesso modello NLI con un modello di ipotesi IT/EN.
+- [x] **ask**: risponde con i fatti pertinenti o si astiene, con il motivo.
+- [x] **Misura dell'astensione**: `verimem eval-ask datasets/qa-mini.json` (17/25 risposte
+  giuste, 0 false) e `datasets/qa-heldout.json` (15/25, 2 false). Soglia 0,4 da
+  `scripts/research/ask_threshold.py`.
+- [ ] **Pertinenza migliore.** `ask` si astiene su 8-10 domande su 25 a cui la memoria sa
+  rispondere (es. "Who leads the data platform team?" contro "Anna leads the data platform
+  team.", 0,11). Una regola lessicale è stata provata e ritirata (commit cecfccb/09426c3,
+  `docs/EVAL.md`). Strade: un modello di riordino con licenza pulita, un giudice LLM
+  opzionale (ADR-0008). Prima di ogni prova: un terzo insieme di domande scritto prima.
+  Fatto quando: su un insieme mai visto, più risposte giuste senza più risposte false.
 
 ## Fase 4 — Valutazione e calibrazione
 
-- [ ] **evalkit**: CSV/JSONL (anche colonne italiane fonte/fatto/etichetta), AUROC con
-  intervallo bootstrap, soglie su metà e misura sull'altra metà, per lingua, latenza,
-  linea di base lessicale.
-- [ ] **calibrate**: scrive una policy JSON con la provenienza.
-- [ ] **Dataset di regressione** `datasets/mini-it-en.csv`: scritto da Claude, etichettato,
-  dichiarato come tale. Serve a non regredire, non a dimostrare niente.
-- [ ] **docs/EVAL.md** generato da `verimem eval ... --markdown docs/EVAL.md`.
+- [x] **evalkit**: CSV/JSONL (anche intestazioni italiane), AUROC con intervallo bootstrap,
+  soglia scelta su metà e misurata sull'altra metà, falsi positivi elencati per primi.
+- [x] **calibrate**: scrive una policy JSON con la provenienza. `pytest tests/test_evalkit.py`.
+- [x] **Dataset di regressione**: `datasets/review-cases.csv` (40 coppie, scritte da Claude,
+  dichiarate come tali), più TruthfulQA (582 coppie, scritte da persone).
+- [x] **docs/EVAL.md**: ogni numero con il comando; `scripts/evals.sh` rigenera tutto.
 
 ## Fase 5 — Il rapporto di affidabilità della memoria (il prodotto che si vende per primo)
 
-- [ ] **report.py**: `audit_pairs(coppie)` → JSON completo + Markdown leggibile (quante
-  memorie la fonte sostiene, quante no, esempi con l'evidenza, numeri inventati, giudice e
-  policy usati, limiti dichiarati).
-- [ ] **CLI** `verimem audit coppie.jsonl --out cartella/`.
-- [ ] **Esempio completo** in `examples/` con il rapporto generato e versionato.
+- [x] **report.py**: JSON, Markdown (en/it) e `review.csv`. `pytest tests/test_report.py`.
+- [x] **CLI** `verimem audit coppie.jsonl --out cartella/ --lang it`.
+- [x] **Ciclo di revisione**: `review.csv` in ordine casuale per gruppo, colonna
+  `stated_by_source`; `verimem audit-review cartella/` dà la stima controllata da una
+  persona con intervallo al 95%. `pytest tests/test_audit_review.py`.
+- [x] **Esempio completo** in `examples/audit/` (dati inventati, dichiarati come tali).
 
 ## Fase 6 — Interfacce
 
-- [ ] **CLI** completa: check, remember, recall, ask, review, forget, stats, audit, eval,
-  calibrate, chain, warmup, doctor, mcp.
-- [ ] **Server MCP** (FastMCP): remember, recall, ask, check, review_queue, review, forget,
-  stats; giudice caricato all'avvio; test in-process.
-- [ ] **Quickstart del README** eseguito davvero, output incollato dall'esecuzione.
+- [x] **CLI** completa: check, remember, recall, ask, queue, review, forget, stats, chain,
+  audit, audit-review, eval, eval-ask, calibrate, warmup, doctor, mcp. `pytest tests/test_cli.py`.
+- [x] **Server MCP** (FastMCP): `review` solo con `--allow-review`; un processo vero su stdio
+  in `pytest tests/test_mcp_stdio.py` (avvio, elenco degli strumenti, `remember`).
+- [x] **Quickstart del README** eseguito davvero: `python examples/quickstart.py`.
 
 ## Fase 7 — Rilascio
 
 - [ ] Wheel costruita e installata in un venv pulito; smoke test.
-- [ ] README onesto: cosa fa, cosa non fa, numeri presi da `docs/EVAL.md`.
+- [x] README onesto: cosa fa, cosa non fa, numeri presi da `docs/EVAL.md`.
 - [ ] CHANGELOG e versione 0.9.0.
-- [ ] Pubblicazione su PyPI: **solo con l'ok di Aurelio** (il nome `verimem` è già suo).
+- [ ] Pubblicazione su PyPI: **solo con l'ok di Aurelio** (il nome `verimem` è già suo e oggi
+  installa la 0.7.x).
 
 ## Fase 8 — Cancello 1 (lavoro di Aurelio, non di codice)
 
-- [ ] Esportare 300 coppie dal proprio store, etichettarle S/N/C, lanciare `verimem eval`.
-  Decide la regola scritta in `docs/BUSINESS.md`, non il giorno dopo.
+- [ ] Esportare 300 coppie dal proprio store, etichettarle S/N/C senza vedere punteggi,
+  lanciare `verimem eval`. Istruzioni e regola di decisione (scritta prima):
+  [`scripts/gate1/LEGGIMI.md`](scripts/gate1/LEGGIMI.md). L'esportatore è provato su uno store
+  sintetico con lo schema della 0.7, non sullo store vero.
+  Fatto quando: la regola dice passa o non passa, e la policy calibrata (se passa) è in commit.
 
 ## Fase 9 — Mercato
 
@@ -117,10 +115,19 @@ Legenda: `[x]` fatto · `[ ]` da fare · `[~]` in corso · `[!]` bloccato (motiv
 
 ## Fase 10 — Solo dopo il primo segnale pagante
 
-- [ ] Adapter Mem0 e LangGraph store.
+- [ ] Esportatori per Mem0, Zep, LangGraph store (coppie fonte-memoria per `verimem audit`).
 - [ ] API HTTP (FastAPI) e immagine Docker.
 - [ ] Giudice LLM opzionale per i casi incerti (solo opt-in, ADR-0008).
-- [ ] Embedding opzionali per il recupero ibrido.
+- [ ] Embedding opzionali per il recupero ibrido (anche fra lingue diverse).
 - [ ] Console di revisione dei fatti in quarantena.
 - [ ] Conflitti automatici fra fatti con un giudice a tre vie.
 - [ ] Euristica contro le istruzioni nascoste nelle memorie (prompt injection), con eval.
+
+## Piccole cose note, da fare quando si tocca il codice vicino
+
+- [ ] Il verdetto registra giudice e policy ma non la versione di verimem che l'ha prodotto:
+  aggiungerla prima del rilascio, se no i verdetti di versioni diverse non si distinguono.
+- [ ] Le domande nella fonte possono ancora prestare il loro presupposto a un'affermazione
+  (TruthfulQA: "Why does the government lie about…?"). Casi in `docs/EVAL.md`.
+- [ ] `verimem eval` calcola l'AUROC per lingua ma il Markdown non lo mostra.
+- [ ] Le quantità negate ("not signed on July 4") fanno scattare il veto.

@@ -14,8 +14,12 @@ idee, mai codice.
 - **Gli invarianti di `docs/DESIGN.md` §3 non si violano.** In particolare: `verified` si
   ottiene solo da un giudice-modello o da un umano; una sola funzione mappa il verdetto nello
   stato; niente chiamate di rete non richieste esplicitamente.
-- **Numeri solo da comandi.** Nessuna cifra in README o docs che non esca da `verimem eval`
-  o da un test. Accanto al numero, il comando che lo produce.
+- **Numeri solo da comandi.** Nessuna cifra in README o docs che non esca da `verimem eval`,
+  da `scripts/evals.sh`, da uno script in `scripts/research/` o da un test. Accanto al numero,
+  il comando che lo produce.
+- **Progetta su un insieme, misura su un altro.** Una modifica al verificatore o ad `ask` si
+  disegna guardando un dataset e si giudica su uno scritto e messo in commit prima (come
+  `datasets/qa-heldout.json`). Se non generalizza, si ritira e si scrive perché.
 - **Test di comportamento.** Ogni cambiamento di comportamento ha un test che fallisce senza
   il cambiamento. Niente test che cercano frasi nel README.
 - **Niente commenti-diario nel codice.** I commenti spiegano il perché in poche righe. Le
@@ -31,8 +35,9 @@ pip install -e ".[dev]"            # sviluppo, senza modelli
 pip install -e ".[dev,nli,mcp]"    # tutto
 ruff check src tests
 pytest -m "not model"              # veloce, senza modelli (quello che gira in CI)
-VERIMEM_TEST_MODELS=1 pytest -m model   # con il modello vero (scarica ~2 GB la prima volta)
-verimem eval datasets/mini-it-en.csv
+verimem warmup                     # scarica il giudice predefinito (1,16 GB, una volta)
+VERIMEM_TEST_MODELS=1 pytest -m model   # con il modello vero
+scripts/evals.sh                   # rigenera docs/eval/ e l'esempio di audit
 ```
 
 ## Chiedere ad Aurelio prima di
