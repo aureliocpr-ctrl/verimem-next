@@ -179,7 +179,7 @@ class Answer:
     abstained: bool
     reason: str
     considered: int = 0
-    scores: tuple[float, ...] = field(default=())
+    candidates: tuple[tuple[str, float], ...] = field(default=())  # (fact id, relevance)
 
     def to_dict(self) -> dict[str, Any]:
         return {

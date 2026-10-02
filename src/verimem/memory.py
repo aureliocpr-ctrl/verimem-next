@@ -269,12 +269,12 @@ class Memory:
         ranked = sorted(zip(facts, scores, strict=True), key=lambda x: x[1], reverse=True)
         th = self.policy.relevance_threshold
         kept = tuple(Recalled(f, s) for f, s in ranked if s >= th)[:k]
-        all_scores = tuple(s for _, s in ranked)
+        candidates = tuple((f.id, s) for f, s in ranked)
         if not kept:
             return Answer(question, (), True, "no verified fact answers the question "
-                          f"(best relevance p={ranked[0][1]:.2f})", len(facts), all_scores)
+                          f"(best relevance p={ranked[0][1]:.2f})", len(facts), candidates)
         return Answer(question, kept, False, f"{len(kept)} verified fact(s) answer the question",
-                      len(facts), all_scores)
+                      len(facts), candidates)
 
     def history(self, subject: str) -> list[Fact]:
         rows = self.store.facts_where("f.subject = ?", (subject,), order="f.valid_from, f.rowid")
