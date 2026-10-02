@@ -151,8 +151,9 @@ The input has one memory per line with the text it was extracted from:
 `{"id": "...", "source": "...", "memory": "..."}` (or CSV with `source,memory`, also
 `fonte,memoria`). The output folder holds `report.md` (how many memories their source
 supports, which it does not, with the closest passage, and which add numbers the source
-never states), `report.json`, and `review.csv`: every memory that could be checked, with its
-source, grouped by verdict and shuffled inside each group. A person answers yes or no for a few rows from the
+never states), the same report as a self-contained `report.html` (print it to PDF for a
+client), `report.json`, and `review.csv`: every memory that could be checked, with its source,
+grouped by verdict and shuffled inside each group. A person answers yes or no for a few rows from the
 top of each group, then
 
 ```

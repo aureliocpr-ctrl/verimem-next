@@ -8,6 +8,7 @@ looks like before running it on your own memories.
 | `pairs.jsonl` | the input: 32 memories, each with the text it was extracted from |
 | `report-en/`, `report-it/` | the output of `verimem audit`, in English and Italian |
 | `report-*/report.md` | the report a person reads |
+| `report-*/report.html` | the same report as a self-contained page, to print to PDF |
 | `report-*/report.json` | everything, one row per memory, for your own analysis |
 | `report-*/review.csv` | the memories that could be judged, with their source, for a person to check |
 | `report-*/review-summary.md` | the output of `verimem audit-review` once `review.csv` is filled |

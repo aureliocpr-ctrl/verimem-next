@@ -6,6 +6,7 @@ from verimem.report import (
     AuditRow,
     audit_pairs,
     load_audit_rows,
+    render_html,
     render_markdown,
     wilson,
     write_report,
@@ -53,10 +54,10 @@ def test_markdown_in_both_languages_names_the_judge_and_the_limits():
 def test_written_files(tmp_path):
     rep = audit_pairs(ROWS, verifier())
     paths = write_report(rep, tmp_path / "out", lang="it")
-    assert [p.name for p in paths] == ["report.json", "report.md", "review.csv"]
+    assert [p.name for p in paths] == ["report.json", "report.md", "report.html", "review.csv"]
     data = json.loads(paths[0].read_text(encoding="utf-8"))
     assert data["total"] == 4
-    with paths[2].open(encoding="utf-8-sig") as f:
+    with paths[3].open(encoding="utf-8-sig") as f:
         review = list(csv.DictReader(f))
     # Every judged memory, flagged ones first, with its source for the reviewer.
     assert {r["id"] for r in review[:2]} == {"2", "3"} and review[2]["id"] == "1"
@@ -95,3 +96,23 @@ def test_a_report_made_with_the_word_overlap_baseline_says_so():
     for lang, warning in (("en", "not a reliability estimate"), ("it", "non sono una stima")):
         assert warning in render_markdown(audit_pairs(ROWS, lexical), lang=lang)
         assert warning not in render_markdown(audit_pairs(ROWS, verifier()), lang=lang)
+
+
+def test_html_report_escapes_memories_and_carries_the_numbers(tmp_path):
+    rows = [*ROWS, AuditRow("5", "We hired 3 people.", "<script>alert(1)</script> hired 9.")]
+    rep = audit_pairs(rows, verifier())
+    page = render_html(rep, lang="it")
+    assert page.startswith("<!doctype html>") and "<script>" not in page
+    assert "&lt;script&gt;alert(1)&lt;/script&gt; hired 9." in page
+    assert "Rapporto di affidabilità della memoria" in page and f">{rep.total}<" in page
+    assert "fake:v1" in page
+    paths = write_report(rep, tmp_path / "out", lang="it")
+    assert (tmp_path / "out" / "report.html").read_text(encoding="utf-8") == page
+    assert [p.name for p in paths] == ["report.json", "report.md", "report.html", "review.csv"]
+
+
+def test_html_report_warns_about_the_word_overlap_baseline():
+    from verimem.judges.lexical import LexicalJudge
+
+    rep = audit_pairs(ROWS, Verifier(judge=LexicalJudge(), policy=make_policy()))
+    assert "not a reliability estimate" in render_html(rep, lang="en")

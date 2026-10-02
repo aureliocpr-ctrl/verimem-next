@@ -9,9 +9,11 @@ and CSV (one row per flagged memory, with an empty column for a human reviewer).
 from __future__ import annotations
 
 import csv
+import html
 import json
 import math
 import random
+import re
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -255,19 +257,102 @@ def render_markdown(rep: AuditReport, *, lang: str = "en", examples: int = 10) -
     return "\n".join(lines) + "\n"
 
 
+_CSS = """
+body{font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:#1d2125;margin:0;
+background:#fff}main{max-width:820px;margin:0 auto;padding:32px 20px}h1{font-size:28px;
+margin:0 0 4px}h2{font-size:20px;margin:32px 0 12px;border-bottom:1px solid #dde1e5;
+padding-bottom:4px}.meta{color:#5f6b76;font-size:14px}.warn{background:#fdecea;border:1px
+solid #f5c2c0;padding:12px 16px;border-radius:6px}.cards{display:grid;gap:12px;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.card{border:1px solid #dde1e5;
+border-radius:8px;padding:12px 14px}.card b{display:block;font-size:26px}.card.bad{
+border-color:#e8a29e;background:#fdf3f2}.bar{display:flex;height:14px;border-radius:7px;
+overflow:hidden;margin:16px 0 4px;background:#eef0f2}.bar span{display:block}.ok{
+background:#3f8f5b}.ko{background:#c4483d}.mid{background:#d7a33a}.na{background:#9aa5b1}
+.ex{border-left:3px solid #c4483d;padding:4px 0 4px 14px;margin:14px 0;break-inside:avoid}
+.ex p{margin:2px 0}.ex .src{color:#5f6b76;font-size:14px}code{background:#f2f4f6;
+padding:1px 4px;border-radius:3px}dl{font-size:14px}dt{font-weight:600;margin-top:8px}
+dd{margin:0 0 0 16px}@media print{main{padding:0}}
+"""
+
+
+def _inline(text: str) -> str:
+    """Escape, then turn the few Markdown marks used in the report texts into HTML."""
+    out = html.escape(text, quote=False)
+    out = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", out)
+    out = re.sub(r"\*(.+?)\*", r"<em>\1</em>", out)
+    return re.sub(r"`(.+?)`", r"<code>\1</code>", out)
+
+
+def render_html(rep: AuditReport, *, lang: str = "en", examples: int = 10) -> str:
+    """The report as one self-contained HTML page (print it to get a PDF). Every text that
+    comes from the audited data is escaped."""
+    t = _TEXT.get(lang, _TEXT["en"])
+    c = rep.counts
+    judged = rep.total - c.get("unjudged", 0)
+    flagged = c.get("not_supported", 0) + c.get("contradicted", 0)
+    lo, hi = rep.unsupported_ci
+    share = "n/a" if judged == 0 else f"{rep.unsupported_share:.0%}"
+    made = t["made"].format(version=rep.verimem_version, date=rep.created_at)
+    e = html.escape
+    parts = [f'<!doctype html><html lang="{e(lang)}"><head><meta charset="utf-8">',
+             '<meta name="viewport" content="width=device-width,initial-scale=1">',
+             f"<title>{e(t['title'])}</title><style>{_CSS}</style></head><body><main>",
+             f"<h1>{e(t['title'])}</h1>",
+             f'<p class="meta">{e(made)}</p>']
+    if not rep.judge_is_model and judged:
+        parts.append(f'<p class="warn">{_inline(t["baseline"].format(judge=rep.judge))}</p>')
+    cards = [(rep.total, t["pairs"], ""), (c.get("supported", 0), t["supported"], ""),
+             (flagged, f"{t['unsupported']}: {share}"
+              + ("" if judged == 0 else f" ({lo:.0%}-{hi:.0%})"), "bad"),
+             (rep.numeric_violations, t["numbers"], ""),
+             (c.get("uncertain", 0), t["uncertain"], ""), (c.get("unjudged", 0), t["unjudged"], "")]
+    parts.append(f"<h2>{e(t['summary'])}</h2><div class=\"cards\">")
+    parts += [f'<div class="card {cls}"><b>{n}</b>{e(label)}</div>' for n, label, cls in cards]
+    parts.append("</div>")
+    if rep.total:
+        segs = [("ok", c.get("supported", 0)), ("ko", flagged), ("mid", c.get("uncertain", 0)),
+                ("na", c.get("unjudged", 0))]
+        parts.append('<div class="bar">' + "".join(
+            f'<span class="{cls}" style="width:{100 * n / rep.total:.2f}%"></span>'
+            for cls, n in segs if n) + "</div>")
+    parts.append(f"<h2>{e(t['what'])}</h2><p>{_inline(t['what_text'])}</p>")
+    bad = sorted((r for r in rep.rows if r["verdict"] in ("not_supported", "contradicted")),
+                 key=lambda r: r["support"])
+    if bad:
+        parts.append(f"<h2>{e(t['examples'])}</h2>")
+        for r in bad[:examples]:
+            src = (f'<p class="src">{e(t["closest"])}: “{e(r["evidence"])}”</p>'
+                   if r["evidence"] else "")
+            parts.append(f'<div class="ex"><p><strong>{e(r["memory"])}</strong></p>'
+                         f"<p>{e(explain(r, lang))}</p>{src}</div>")
+    parts.append(f"<h2>{e(t['limits'])}</h2>"
+                 f"<p>{_inline(t['limits_text'].format(judge=rep.judge, policy=rep.policy))}</p>"
+                 f"<p>{_inline(t['review'])}</p>")
+    if rep.calibration:
+        parts.append(f"<h2>{e(t['calibration'])}</h2><dl>")
+        for part, info in rep.calibration.items():
+            parts.append(f"<dt>{e(str(part))}</dt>")
+            items = info.items() if isinstance(info, dict) else [("", info)]
+            parts += [f"<dd>{e(f'{k}: {v}' if k else str(v))}</dd>" for k, v in items]
+        parts.append("</dl>")
+    parts.append("</main></body></html>")
+    return "\n".join(parts) + "\n"
+
+
 _GROUP = {Label.NOT_SUPPORTED.value: "flagged", Label.CONTRADICTED.value: "flagged",
           Label.UNCERTAIN.value: "uncertain", Label.SUPPORTED.value: "verified"}
 _GROUPS = ("flagged", "uncertain", "verified")
 
 
 def write_report(rep: AuditReport, out_dir: str | Path, *, lang: str = "en") -> list[Path]:
-    """Write report.json, report.md and review.csv into `out_dir`; return the paths."""
+    """Write report.json, report.md, report.html and review.csv into `out_dir`."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    paths = [out / "report.json", out / "report.md", out / "review.csv"]
+    paths = [out / "report.json", out / "report.md", out / "report.html", out / "review.csv"]
     paths[0].write_text(json.dumps(rep.to_dict(), indent=2, ensure_ascii=False) + "\n",
                         encoding="utf-8")
     paths[1].write_text(render_markdown(rep, lang=lang), encoding="utf-8")
+    paths[2].write_text(render_html(rep, lang=lang), encoding="utf-8")
     # Random order inside each group, so reading from the top of a group is a random sample
     # of it; the seed makes the file reproducible.
     rng = random.Random(7)
@@ -276,7 +361,7 @@ def write_report(rep: AuditReport, out_dir: str | Path, *, lang: str = "en") -> 
         rows = [r for r in rep.rows if _GROUP.get(r["verdict"]) == group]
         rng.shuffle(rows)
         ordered += rows
-    with paths[2].open("w", newline="", encoding="utf-8-sig") as f:
+    with paths[3].open("w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
         w.writerow(["id", "verdict", "why", "memory", "evidence", "source", "stated_by_source",
                     "reviewer_note"])
