@@ -27,7 +27,7 @@ Cosa è debole, misurato:
 
 Suite: `pytest -m "not model"` → 138 test passati (con mcp 1.30 e con mcp 2.2);
 `ruff check src tests` pulito; `VERIMEM_TEST_MODELS=1 pytest -m model` → 2 passati
-(ultima esecuzione: 2026-10-02).
+(ultima esecuzione: 2026-10-02). CI su GitHub verde su Linux e Windows, Python 3.10 e 3.12.
 
 ## Come si lavora
 

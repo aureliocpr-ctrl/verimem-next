@@ -19,9 +19,10 @@ Legenda: `[x]` fatto · `[ ]` da fare · `[~]` in corso · `[!]` bloccato (motiv
   Fatto quando: `pip install -e ".[dev]"` va a buon fine e `python -c "import verimem"` funziona.
 - [x] **Documenti di base.** `docs/DESIGN.md`, ADR 0001-0009, questa checklist,
   `HANDOFF.md`, `CLAUDE.md`. Il piano commerciale è fuori da questo repository pubblico.
-- [~] **CI.** Workflow scritto (`.github/workflows/ci.yml`: `ruff check` e
-  `pytest -m "not model"` su Linux e Windows, Python 3.10 e 3.12, senza modelli).
-  Fatto quando: il primo push su GitHub ha la CI verde.
+- [x] **CI.** `.github/workflows/ci.yml`: `ruff check` e `pytest -m "not model"` su Linux e
+  Windows, Python 3.10 e 3.12, senza modelli, più un job con mcp 1.x. Il primo push ha trovato
+  un difetto solo su Windows (percorsi quotati nei test), corretto: verde dal run 2
+  (commit 4620054).
 - [x] **Repository su GitHub.** `aureliocpr-ctrl/verimem-next`, pubblico, creato da Aurelio.
   Il materiale commerciale (piano, offerta, contatti, post) è stato tolto dalla storia prima
   del primo push e consegnato ad Aurelio a parte.
