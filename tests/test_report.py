@@ -116,3 +116,29 @@ def test_html_report_warns_about_the_word_overlap_baseline():
 
     rep = audit_pairs(ROWS, Verifier(judge=LexicalJudge(), policy=make_policy()))
     assert "not a reliability estimate" in render_html(rep, lang="en")
+
+
+CONVERSATION_CSV = ('source,memory\n"User: hi\r\nAgent: hello, how can I help?\r\nUser: I live '
+                    'in Turin, ""near the river""",The user lives in Turin.\n')
+TURNS = ["User: hi", "Agent: hello, how can I help?", 'User: I live in Turin, "near the river"']
+
+
+def test_a_multi_line_source_in_csv_keeps_its_lines(tmp_path):
+    p = tmp_path / "m.csv"
+    p.write_bytes(CONVERSATION_CSV.encode("utf-8"))
+    [row] = load_audit_rows(p)
+    assert row.source.splitlines() == TURNS and row.memory == "The user lives in Turin."
+
+
+def test_audit_rows_read_json_lines_holding_a_unicode_line_separator(tmp_path):
+    p = tmp_path / "m.jsonl"
+    row = {"source": "Line one line two.", "memory": "Line one."}
+    p.write_text(json.dumps(row, ensure_ascii=False) + "\n", encoding="utf-8")
+    assert [r.source for r in load_audit_rows(p)] == ["Line one line two."]
+
+
+def test_audit_rows_read_a_json_array(tmp_path):
+    p = tmp_path / "m.json"
+    p.write_text(json.dumps([{"source": "Maria lives in Turin.", "memory": "Maria lives in "
+                              "Turin."}], indent=2), encoding="utf-8")
+    assert [r.memory for r in load_audit_rows(p)] == ["Maria lives in Turin."]

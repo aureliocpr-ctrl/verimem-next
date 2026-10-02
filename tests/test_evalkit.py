@@ -147,3 +147,18 @@ def test_report_lists_false_accepts_before_misses():
     assert "Verified although labelled N or C (1 of 1)" in md
     assert "Not verified although labelled S (15 of 20)" in md
     assert md.index("delta epsilon") < md.index("alpha0 gamma0")
+
+
+def test_load_pairs_keeps_the_lines_of_a_multi_line_source(tmp_path):
+    p = tmp_path / "m.csv"
+    p.write_bytes(b'source,claim,label\n"User: hi\r\nAgent: hello\nUser: I live in Turin",'
+                  b"The user lives in Turin.,S\n")
+    [pair] = load_pairs(p)
+    assert pair.source.splitlines() == ["User: hi", "Agent: hello", "User: I live in Turin"]
+
+
+def test_load_pairs_reads_json_lines_holding_a_unicode_line_separator(tmp_path):
+    p = tmp_path / "m.jsonl"
+    row = {"source": "Line one line two.", "claim": "Line one.", "label": "S"}
+    p.write_text(json.dumps(row, ensure_ascii=False) + "\n", encoding="utf-8")
+    assert [q.source for q in load_pairs(p)] == ["Line one line two."]

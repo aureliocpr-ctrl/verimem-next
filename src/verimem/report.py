@@ -23,6 +23,7 @@ from typing import Any
 
 from ._version import __version__
 from .numbers import missing_quantities
+from .records import read_records
 from .types import Label, Verdict
 from .verifier import Verifier
 
@@ -39,17 +40,9 @@ class AuditRow:
 
 
 def load_audit_rows(path: str | Path) -> list[AuditRow]:
-    """Read (source, memory) pairs from JSON lines or CSV (`,`/`;`, English or Italian headers)."""
-    path = Path(path)
-    text = path.read_text(encoding="utf-8-sig")
-    if path.suffix.lower() in {".jsonl", ".json"}:
-        raw = [json.loads(line) for line in text.splitlines() if line.strip()]
-    else:
-        first = text.splitlines()[0] if text else ""
-        delim = ";" if first.count(";") > first.count(",") else ","
-        raw = list(csv.DictReader(text.splitlines(), delimiter=delim))
+    """Read (source, memory) pairs from JSON or CSV (`,`/`;`, English or Italian headers)."""
     rows = []
-    for i, r in enumerate(raw):
+    for i, r in enumerate(read_records(path)):
         r = {_ALIASES.get(k.strip().lower(), k.strip().lower()): (v or "") for k, v in r.items()}
         if str(r.get("memory", "")).strip():
             rows.append(AuditRow(str(r.get("id") or i + 1), str(r.get("source", "")),

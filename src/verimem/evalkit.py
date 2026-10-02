@@ -7,7 +7,6 @@ chosen on one half of the pairs and measured on the other.
 
 from __future__ import annotations
 
-import csv
 import json
 import random
 import statistics
@@ -17,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from .policy import Thresholds
+from .records import read_records
 from .types import Label, Verdict
 from .verifier import Verifier
 
@@ -34,17 +34,9 @@ class Pair:
 
 
 def load_pairs(path: str | Path) -> list[Pair]:
-    """Read labelled pairs from CSV (`,` or `;`, English or Italian headers) or JSON lines."""
-    path = Path(path)
-    text = path.read_text(encoding="utf-8-sig")
-    if path.suffix.lower() in {".jsonl", ".json"}:
-        rows = [json.loads(line) for line in text.splitlines() if line.strip()]
-    else:
-        first = text.splitlines()[0] if text else ""
-        delim = ";" if first.count(";") > first.count(",") else ","
-        rows = list(csv.DictReader(text.splitlines(), delimiter=delim))
+    """Read labelled pairs from CSV (`,` or `;`, English or Italian headers) or JSON."""
     pairs = []
-    for i, raw in enumerate(rows):
+    for i, raw in enumerate(read_records(path)):
         r = {_ALIASES.get(k.strip().lower(), k.strip().lower()): (v or "") for k, v in raw.items()}
         label = str(r.get("label", "")).strip().upper()[:1]
         if label not in {"S", "N", "C"} or not r.get("source") or not r.get("claim"):
