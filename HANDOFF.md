@@ -4,9 +4,10 @@ Ultimo aggiornamento: 2026-10-02, sessione cloud di Claude (riscrittura da zero)
 
 ## Dove siamo
 
-Fasi 1-6 della [checklist](CHECKLIST.md) fatte: verificatore, memoria, lettura con
-astensione, valutazione, rapporto di affidabilità con ciclo di revisione, CLI e server MCP.
-Tutto è in commit locali: il repository su GitHub non esiste ancora (vedi sotto).
+Fasi 1-7 della [checklist](CHECKLIST.md) fatte (tranne versione e PyPI): verificatore,
+memoria, lettura con astensione, valutazione, rapporto di affidabilità con ciclo di
+revisione, CLI e server MCP, pacchetto provato in ambienti puliti. Il codice è su
+`aureliocpr-ctrl/verimem-next` (pubblico).
 
 Cosa funziona, misurato (`docs/EVAL.md`, ogni numero con il suo comando):
 
@@ -24,8 +25,9 @@ Cosa è debole, misurato:
   era disegnata e non su quello tenuto da parte: ritirata (commit cecfccb e 09426c3).
 - **Nessun numero viene da dati reali.** Le soglie restano provvisorie fino al Cancello 1.
 
-Suite: `pytest -m "not model"` → 138 test passati (con mcp 1.30 e con mcp 2.2); `ruff check src tests` pulito;
-`VERIMEM_TEST_MODELS=1 pytest -m model` → 2 passati (ultima esecuzione: 2026-10-02).
+Suite: `pytest -m "not model"` → 138 test passati (con mcp 1.30 e con mcp 2.2);
+`ruff check src tests` pulito; `VERIMEM_TEST_MODELS=1 pytest -m model` → 2 passati
+(ultima esecuzione: 2026-10-02).
 
 ## Come si lavora
 
@@ -43,22 +45,22 @@ disegna su un insieme di dati e si giudica su un altro scritto prima.
 
 ## Prossimo passo
 
-1. **Fase 7**: fatta tranne versione e PyPI, che aspettano Aurelio.
-2. **Fase 9, mercato**: pagina dell'offerta "Memory Reliability Audit" e messaggio di
-   contatto, con i numeri di `docs/EVAL.md` e il rapporto di esempio.
-3. Per Aurelio, quando vuole: **Cancello 1** con `scripts/gate1/LEGGIMI.md`.
+1. **Per Aurelio, prima di vendere: Cancello 1** con `scripts/gate1/LEGGIMI.md` (mezza
+   giornata di etichette). Decide se il giudice regge sui dati veri e calibra le soglie.
+2. **Per Aurelio, in parallelo**: scegliere il prezzo dell'audit e i primi 30 contatti (le
+   bozze dell'offerta e dei messaggi sono nel materiale commerciale consegnato a parte).
+3. **Codice**: la voce aperta più utile è "Pertinenza migliore" (fase 3): `ask` si astiene
+   troppo. Prima di provare qualunque cosa, scrivere e mettere in commit un terzo insieme di
+   domande.
 
 ## Decisioni aperte per Aurelio
 
-1. **Creare il repository** `aureliocpr-ctrl/verimem-next` (vuoto) e dare accesso all'app
-   Claude: senza, il lavoro resta in questa sessione. Poi il primo push e la CI.
-2. **`docs/business/` in un repository pubblico?** Contiene il piano (prezzi ipotizzati,
-   clienti tipo, criteri di stop), le bozze dell'offerta, dei messaggi di contatto e del post,
-   e il manuale di consegna dell'audit. Se il repository sarà pubblico e non vuoi che si
-   vedano, la cartella va tolta dalla storia **prima** del primo push (una riscrittura dei
-   commit locali, facile adesso, difficile dopo).
-3. **PyPI**: pubblicare questa versione con il nome `verimem` (oggi installa la 0.7.x)?
-4. Più avanti: rinominare questo repository in `verimem` e archiviare il vecchio?
+1. **Il materiale commerciale** (piano con prezzi ipotizzati e criteri di stop, offerta,
+   manuale di consegna, messaggi di contatto, post) non è in questo repository pubblico: è
+   stato tolto dalla storia prima del primo push e consegnato a parte. Se lo vuoi qui, o in
+   un repository privato, si aggiunge con un commit.
+2. **PyPI**: pubblicare questa versione con il nome `verimem` (oggi installa la 0.7.x)?
+3. Più avanti: rinominare questo repository in `verimem` e archiviare il vecchio?
 
 ## Problemi noti
 

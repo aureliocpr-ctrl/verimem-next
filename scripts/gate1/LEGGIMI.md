@@ -2,7 +2,7 @@
 
 Domanda: sui tuoi dati, il giudice ferma le memorie che la fonte non dice senza buttare
 quelle vere? Se nessun giudice locale ci riesce, la promessa del prodotto non regge in
-locale e ci si ferma (regola in `docs/business/BUSINESS.md`). Costo: zero euro, mezza giornata.
+locale e ci si ferma. Costo: zero euro, mezza giornata.
 
 La regola di decisione è scritta qui **prima** di vedere i numeri e non si ridiscute dopo:
 

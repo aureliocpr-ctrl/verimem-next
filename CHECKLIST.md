@@ -18,14 +18,13 @@ Legenda: `[x]` fatto · `[ ]` da fare · `[~]` in corso · `[!]` bloccato (motiv
   `src/`, extra `nli`, `mcp`, `dev`), `.gitignore`.
   Fatto quando: `pip install -e ".[dev]"` va a buon fine e `python -c "import verimem"` funziona.
 - [x] **Documenti di base.** `docs/DESIGN.md`, ADR 0001-0009, questa checklist,
-  `HANDOFF.md`, `CLAUDE.md`, `docs/business/BUSINESS.md`.
+  `HANDOFF.md`, `CLAUDE.md`. Il piano commerciale è fuori da questo repository pubblico.
 - [~] **CI.** Workflow scritto (`.github/workflows/ci.yml`: `ruff check` e
   `pytest -m "not model"` su Linux e Windows, Python 3.10 e 3.12, senza modelli).
   Fatto quando: il primo push su GitHub ha la CI verde.
-- [!] **Repository su GitHub.** Bloccato: l'integrazione della sessione cloud non può creare
-  repository (errore 403). Aurelio crea `aureliocpr-ctrl/verimem-next` vuoto e dà accesso
-  all'app Claude. Prima del primo push va deciso se `docs/business/` (piano, prezzi, bozze commerciali)
-  può essere pubblico (vedi HANDOFF, decisioni aperte).
+- [x] **Repository su GitHub.** `aureliocpr-ctrl/verimem-next`, pubblico, creato da Aurelio.
+  Il materiale commerciale (piano, offerta, contatti, post) è stato tolto dalla storia prima
+  del primo push e consegnato ad Aurelio a parte.
   Fatto quando: `git push -u origin main` riesce.
 
 ## Fase 1 — Il verificatore
@@ -114,13 +113,16 @@ Legenda: `[x]` fatto · `[ ]` da fare · `[~]` in corso · `[!]` bloccato (motiv
 
 ## Fase 9 — Mercato
 
-- [x] Pagina dell'offerta "Memory Reliability Audit" (IT/EN): bozze in `docs/business/`,
-  manca il prezzo (decisione di Aurelio).
-- [x] Manuale di consegna dell'audit (`docs/business/consegna-audit.md`), con il numero di
-  memorie da rivedere da `scripts/research/review_sample_size.py`.
+Le bozze di questa fase sono fuori dal repository pubblico (consegnate ad Aurelio il
+2026-10-02, cartella `business/`).
+
+- [x] Pagina dell'offerta "Memory Reliability Audit" (IT/EN); manca il prezzo (decisione di
+  Aurelio).
+- [x] Manuale di consegna dell'audit, con il numero di memorie da rivedere da
+  `scripts/research/review_sample_size.py`.
 - [x] Bozza di post (IT/EN) con i numeri veri e i limiti; messaggi di contatto e criteri per
-  trovare i clienti (`docs/business/`). Le cifre di mercato citate sono state ricontrollate
-  con le fonti il 2026-10-02.
+  trovare i clienti. Le cifre di mercato citate sono state ricontrollate con le fonti il
+  2026-10-02.
 - [ ] Lista di 30 contatti (lavoro di Aurelio: relazioni e scelta dei nomi).
 - [ ] Pubblicazione nel registro MCP (dopo il primo push e la scelta su PyPI).
 
