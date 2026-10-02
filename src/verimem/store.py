@@ -54,7 +54,8 @@ CREATE INDEX IF NOT EXISTS facts_subject ON facts(subject);
 CREATE INDEX IF NOT EXISTS facts_norm    ON facts(norm);
 
 CREATE VIRTUAL TABLE IF NOT EXISTS facts_fts USING fts5(
-    text, content='facts', content_rowid='rowid', tokenize='unicode61 remove_diacritics 2'
+    text, content='facts', content_rowid='rowid',
+    tokenize='porter unicode61 remove_diacritics 2'
 );
 CREATE TRIGGER IF NOT EXISTS facts_ai AFTER INSERT ON facts BEGIN
     INSERT INTO facts_fts(rowid, text) VALUES (new.rowid, new.text);

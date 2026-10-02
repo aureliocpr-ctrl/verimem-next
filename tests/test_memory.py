@@ -108,6 +108,13 @@ def test_recall_matches_inflected_italian_words():
     assert len(hits) == 1
 
 
+def test_recall_matches_english_inflections():
+    m = make_memory()
+    fact = "Orders above 50 euros ship for free."
+    m.remember(fact, source=fact)
+    assert [h.fact.text for h in m.recall("shipping on a 60 euro order")] == [fact]
+
+
 def test_ask_answers_with_relevant_facts_or_abstains():
     rel = FakeRelevance({"move": "Milan"})
     m = make_memory(relevance=rel)
