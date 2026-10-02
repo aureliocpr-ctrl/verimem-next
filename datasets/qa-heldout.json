@@ -1,0 +1,337 @@
+{
+ "description": "Held-out QA set for Memory.ask, written by Claude on 2026-10-02 before any change to the relevance check was tried on it: 20 facts about a fictional e-commerce company and one of its people, 25 questions the facts answer (some paraphrased, some needing a small inference) and 25 near misses.",
+ "facts": [
+  {
+   "id": "h01",
+   "text": "Sara Conti leads the customer support team."
+  },
+  {
+   "id": "h02",
+   "text": "The support team answers tickets from 8:00 to 18:00 on weekdays."
+  },
+  {
+   "id": "h03",
+   "text": "The warehouse moved from Monza to Lodi in 2023."
+  },
+  {
+   "id": "h04",
+   "text": "Orders above 50 euros ship for free."
+  },
+  {
+   "id": "h05",
+   "text": "The mobile app is built with Flutter."
+  },
+  {
+   "id": "h06",
+   "text": "Davide runs the Milan marathon every April."
+  },
+  {
+   "id": "h07",
+   "text": "Davide's partner is called Elena."
+  },
+  {
+   "id": "h08",
+   "text": "The returns policy allows 30 days for a refund."
+  },
+  {
+   "id": "h09",
+   "text": "The newsletter goes out every Friday morning."
+  },
+  {
+   "id": "h10",
+   "text": "The payment provider is Stripe."
+  },
+  {
+   "id": "h11",
+   "text": "Il magazzino di Lodi ha 14 dipendenti."
+  },
+  {
+   "id": "h12",
+   "text": "Il sito è ospitato su un server a Francoforte."
+  },
+  {
+   "id": "h13",
+   "text": "Davide è vegetariano dal 2020."
+  },
+  {
+   "id": "h14",
+   "text": "La campagna di Natale è partita il 20 novembre."
+  },
+  {
+   "id": "h15",
+   "text": "Il fornitore di imballaggi è la ditta Cartotecnica Rossi."
+  },
+  {
+   "id": "h16",
+   "text": "Elena lavora come architetta."
+  },
+  {
+   "id": "h17",
+   "text": "Il backup del database viene fatto ogni notte alle 3."
+  },
+  {
+   "id": "h18",
+   "text": "Il prezzo dell'abbonamento premium è 9,90 euro al mese."
+  },
+  {
+   "id": "h19",
+   "text": "Davide ha un cane di nome Brio."
+  },
+  {
+   "id": "h20",
+   "text": "La riunione con gli investitori è fissata per il 12 marzo."
+  }
+ ],
+ "questions": [
+  {
+   "q": "Who leads the customer support team?",
+   "answer": [
+    "h01"
+   ]
+  },
+  {
+   "q": "Who is in charge of customer support?",
+   "answer": [
+    "h01"
+   ]
+  },
+  {
+   "q": "When is the support team available?",
+   "answer": [
+    "h02"
+   ]
+  },
+  {
+   "q": "Where is the warehouse now?",
+   "answer": [
+    "h03"
+   ]
+  },
+  {
+   "q": "When did the warehouse move to Lodi?",
+   "answer": [
+    "h03"
+   ]
+  },
+  {
+   "q": "Do we charge shipping on a 60 euro order?",
+   "answer": [
+    "h04"
+   ]
+  },
+  {
+   "q": "What framework is the mobile app built with?",
+   "answer": [
+    "h05"
+   ]
+  },
+  {
+   "q": "Which race does Davide run every year?",
+   "answer": [
+    "h06"
+   ]
+  },
+  {
+   "q": "What is the name of Davide's partner?",
+   "answer": [
+    "h07"
+   ]
+  },
+  {
+   "q": "How long do customers have to ask for a refund?",
+   "answer": [
+    "h08"
+   ]
+  },
+  {
+   "q": "When does the newsletter go out?",
+   "answer": [
+    "h09"
+   ]
+  },
+  {
+   "q": "Which payment provider do we use?",
+   "answer": [
+    "h10"
+   ]
+  },
+  {
+   "q": "Quanti dipendenti ha il magazzino di Lodi?",
+   "answer": [
+    "h11"
+   ]
+  },
+  {
+   "q": "Dove è ospitato il sito?",
+   "answer": [
+    "h12"
+   ]
+  },
+  {
+   "q": "Davide mangia carne?",
+   "answer": [
+    "h13"
+   ]
+  },
+  {
+   "q": "Da quando Davide è vegetariano?",
+   "answer": [
+    "h13"
+   ]
+  },
+  {
+   "q": "Quando è partita la campagna di Natale?",
+   "answer": [
+    "h14"
+   ]
+  },
+  {
+   "q": "Chi fornisce gli imballaggi?",
+   "answer": [
+    "h15"
+   ]
+  },
+  {
+   "q": "Che lavoro fa Elena?",
+   "answer": [
+    "h16"
+   ]
+  },
+  {
+   "q": "A che ora viene fatto il backup del database?",
+   "answer": [
+    "h17"
+   ]
+  },
+  {
+   "q": "Quanto costa l'abbonamento premium?",
+   "answer": [
+    "h18"
+   ]
+  },
+  {
+   "q": "Come si chiama il cane di Davide?",
+   "answer": [
+    "h19"
+   ]
+  },
+  {
+   "q": "Quando è la riunione con gli investitori?",
+   "answer": [
+    "h20"
+   ]
+  },
+  {
+   "q": "Is the site hosted in Germany?",
+   "answer": [
+    "h12"
+   ]
+  },
+  {
+   "q": "Who supplies our packaging?",
+   "answer": [
+    "h15"
+   ]
+  },
+  {
+   "q": "Who leads the sales team?",
+   "answer": []
+  },
+  {
+   "q": "When is the sales team available?",
+   "answer": []
+  },
+  {
+   "q": "Where was the warehouse before Monza?",
+   "answer": []
+  },
+  {
+   "q": "How much does shipping cost for orders under 50 euros?",
+   "answer": []
+  },
+  {
+   "q": "Which framework is the website built with?",
+   "answer": []
+  },
+  {
+   "q": "Which race does Elena run?",
+   "answer": []
+  },
+  {
+   "q": "What is the name of Elena's dog?",
+   "answer": []
+  },
+  {
+   "q": "How many days do customers have to exchange an item?",
+   "answer": []
+  },
+  {
+   "q": "When does the blog post go out?",
+   "answer": []
+  },
+  {
+   "q": "Which shipping provider do we use?",
+   "answer": []
+  },
+  {
+   "q": "Quanti dipendenti ha l'ufficio di Milano?",
+   "answer": []
+  },
+  {
+   "q": "Dove è ospitato il database?",
+   "answer": []
+  },
+  {
+   "q": "Da quando Elena è vegetariana?",
+   "answer": []
+  },
+  {
+   "q": "Quando è partita la campagna di Pasqua?",
+   "answer": []
+  },
+  {
+   "q": "Chi fornisce le etichette?",
+   "answer": []
+  },
+  {
+   "q": "Che lavoro fa Davide?",
+   "answer": []
+  },
+  {
+   "q": "A che ora viene fatto il backup dei file?",
+   "answer": []
+  },
+  {
+   "q": "Quanto costa l'abbonamento base?",
+   "answer": []
+  },
+  {
+   "q": "Come si chiama il gatto di Davide?",
+   "answer": []
+  },
+  {
+   "q": "Quando è la riunione con i fornitori?",
+   "answer": []
+  },
+  {
+   "q": "What is Sara Conti's phone number?",
+   "answer": []
+  },
+  {
+   "q": "Why did the warehouse move to Lodi?",
+   "answer": []
+  },
+  {
+   "q": "How many marathons has Davide run?",
+   "answer": []
+  },
+  {
+   "q": "What is the capital of Portugal?",
+   "answer": []
+  },
+  {
+   "q": "Qual è il fatturato di Ortica?",
+   "answer": []
+  }
+ ]
+}
