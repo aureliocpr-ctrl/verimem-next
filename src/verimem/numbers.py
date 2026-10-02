@@ -6,7 +6,8 @@ is checked deterministically, before and regardless of the model judge.
 
 Covered: digits with either thousands/decimal convention (both readings kept when
 ambiguous), number words in Italian and English, percentages, scale words and suffixes
-(k, M, thousand, mila, million, milioni, ...), ordinals, times, numeric dates and month names.
+(k, M, thousand, mila, million, milioni, ...), ordinals, times (24-hour, 12-hour with am/pm,
+"alle 3 del pomeriggio", noon and midnight), numeric dates and month names.
 Not covered (by design): quantities the claim computes from the source ("3 + 2 = 5 people");
 such claims are reported as not supported, which is the conservative side.
 """
@@ -87,12 +88,19 @@ _MONTHS = {
     "luglio": 7, "agosto": 8, "settembre": 9, "ottobre": 10, "novembre": 11, "dicembre": 12,
 }
 _ITALIAN_MONTH_FORMS = {k for k in _MONTHS if k.islower()}
+_CLOCK_WORDS = {"noon": {12.0}, "midday": {12.0}, "mezzogiorno": {12.0},
+                "midnight": {0.0, 24.0}, "mezzanotte": {0.0, 24.0}}
 
 # ---------------------------------------------------------------- regexes
 
 _NUM = r"\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?"
 _DATE_NUMERIC = re.compile(r"(?<![\w.,/-])(\d{1,4})[/.-](\d{1,2})[/.-](\d{1,4})(?![\w/-])")
 _TIME = re.compile(r"(?<![\w.,:])(\d{1,2})[:h](\d{2})(?![\w:])")
+# "3 pm", "3:30pm", "3 p.m."; "alle 3 del pomeriggio", "le 9 di sera".
+_TIME_12H = re.compile(r"(?<![\w.,:])(\d{1,2})(?:[:.](\d{2}))?\s?([ap])\.?m\.?(?!\w)",
+                       re.IGNORECASE)
+_TIME_IT_PART = re.compile(r"(?<![\w.,:])(\d{1,2})(?:[:.](\d{2}))?\s+(?:del|della|di)\s+"
+                           r"(mattina|mattino|pomeriggio|sera|notte)\b", re.IGNORECASE)
 _NUMBER = re.compile(
     rf"(?<![\w.,])(?P<num>{_NUM})(?P<ord>st|nd|rd|th|°|ª|º)?"
     rf"(?:\s?(?P<pct>%|{'|'.join(re.escape(w) for w in _PERCENT_WORDS)}))?"
@@ -150,6 +158,22 @@ def extract(text: str) -> list[Quantity]:
         for month in {b, a} if a <= 12 else {b}:  # d/m/y or m/d/y when ambiguous
             if 1 <= month <= 12:
                 found.append(Quantity(m.group(), m.start(), m.end(), frozenset({month}), "month"))
+    for m in (*_TIME_12H.finditer(text), *_TIME_IT_PART.finditer(text)):
+        h, mi = int(m.group(1)), int(m.group(2) or 0)
+        if not (1 <= h <= 12 and mi < 60 and free(m.start(), m.end())):
+            continue
+        part = m.group(3).lower()
+        # The hour as written and as on a 24-hour clock: "3 pm" also matches "15:00".
+        if part in {"a", "mattina", "mattino"}:
+            hours = {h % 12}
+        elif part == "notte":
+            hours = {h % 12, h % 12 + 12}
+        else:
+            hours = {h % 12 + 12}
+        values = {float(h)}
+        for hh in hours:
+            values |= {float(hh), hh * 60.0 + mi, float(f"{hh}.{mi:02d}")}
+        add(m.group(), m.start(), m.end(), values)
     for m in _TIME.finditer(text):
         if free(m.start(), m.end()):
             h, mi = int(m.group(1)), int(m.group(2))
@@ -179,6 +203,8 @@ def extract(text: str) -> list[Quantity]:
             add(word, m.start(), m.end(), {float(month)}, "month")
         elif low in _NUMBER_WORDS:
             add(word, m.start(), m.end(), {float(_NUMBER_WORDS[low])})
+        elif low in _CLOCK_WORDS:
+            add(word, m.start(), m.end(), set(_CLOCK_WORDS[low]))
     found.sort(key=lambda q: (q.start, q.kind))
     return found
 
