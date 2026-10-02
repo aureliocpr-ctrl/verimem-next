@@ -142,3 +142,15 @@ def test_audit_rows_read_a_json_array(tmp_path):
     p.write_text(json.dumps([{"source": "Maria lives in Turin.", "memory": "Maria lives in "
                               "Turin."}], indent=2), encoding="utf-8")
     assert [r.memory for r in load_audit_rows(p)] == ["Maria lives in Turin."]
+
+
+def test_audit_reports_progress_in_chunks_with_the_same_result():
+    rows = ROWS * 40  # 160 memories
+    seen: list[tuple[int, int]] = []
+    judge = FakeJudge()
+    chunked = audit_pairs(rows, Verifier(judge=judge, policy=make_policy()),
+                          progress=lambda done, total: seen.append((done, total)), chunk=64)
+    whole = audit_pairs(rows, verifier())
+    assert seen == [(64, 160), (128, 160), (160, 160)]
+    assert len(judge.calls) == 3  # one judge call per chunk
+    assert chunked.counts == whole.counts and chunked.rows == whole.rows

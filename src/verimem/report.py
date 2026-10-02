@@ -15,7 +15,7 @@ import math
 import random
 import re
 from collections import Counter
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -80,8 +80,17 @@ class AuditReport:
         return dict(self.__dict__)
 
 
-def audit_pairs(rows: Sequence[AuditRow], verifier: Verifier) -> AuditReport:
-    verdicts = verifier.check_many([(r.source or None, r.memory) for r in rows])
+def audit_pairs(rows: Sequence[AuditRow], verifier: Verifier, *,
+                progress: Callable[[int, int], None] | None = None,
+                chunk: int = 64) -> AuditReport:
+    """Verify every memory against its source, `chunk` memories per judge call; `progress`
+    is told how many are done after each chunk."""
+    verdicts: list[Verdict] = []
+    for start in range(0, len(rows), chunk):
+        part = rows[start : start + chunk]
+        verdicts += verifier.check_many([(r.source or None, r.memory) for r in part])
+        if progress is not None:
+            progress(len(verdicts), len(rows))
     counts = Counter(v.label.value for v in verdicts)
     flagged = {Label.NOT_SUPPORTED, Label.CONTRADICTED}
     judged = [v for v in verdicts if v.label is not Label.UNJUDGED]

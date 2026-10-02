@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import random
 import statistics
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -159,11 +159,18 @@ class VerifierReport:
 
 
 def evaluate_verifier(verifier: Verifier, pairs: Sequence[Pair], *,
-                      bootstrap_rounds: int = 1000) -> tuple[VerifierReport, list[Verdict]]:
+                      bootstrap_rounds: int = 1000,
+                      progress: Callable[[int, int], None] | None = None,
+                      chunk: int = 64) -> tuple[VerifierReport, list[Verdict]]:
     import time
 
     t0 = time.perf_counter()
-    verdicts = verifier.check_many([(p.source, p.claim) for p in pairs])
+    verdicts: list[Verdict] = []
+    for start in range(0, len(pairs), chunk):
+        part = pairs[start : start + chunk]
+        verdicts += verifier.check_many([(p.source, p.claim) for p in part])
+        if progress is not None:
+            progress(len(verdicts), len(pairs))
     elapsed = (time.perf_counter() - t0) / max(1, len(pairs))
     support = [score_for_thresholds(v) for v in verdicts]
     labels = [p.label for p in pairs]
@@ -194,15 +201,17 @@ def evaluate_verifier(verifier: Verifier, pairs: Sequence[Pair], *,
 
 
 def calibrate(verifier: Verifier, pairs: Sequence[Pair], *, target_loss: float = 0.08,
-              max_admitted: float | None = None,
-              quarantine_loss: float = 0.02) -> tuple[Thresholds, dict[str, Any]]:
+              max_admitted: float | None = None, quarantine_loss: float = 0.02,
+              progress: Callable[[int, int], None] | None = None,
+              ) -> tuple[Thresholds, dict[str, Any]]:
     """Thresholds from labelled pairs, with the held-out rates that justify them.
 
     `support` loses about `target_loss` of true claims (they become unverified) or, with
     `max_admitted`, lets through about that share of the claims the source does not support
     (N and C); `uncertain` is set so that only about `quarantine_loss` of true claims fall
     low enough to be quarantined."""
-    report, verdicts = evaluate_verifier(verifier, pairs, bootstrap_rounds=200)
+    report, verdicts = evaluate_verifier(verifier, pairs, bootstrap_rounds=200,
+                                         progress=progress)
     support = [score_for_thresholds(v) for v in verdicts]
     labels = [p.label for p in pairs]
     true = [x for x, lab in zip(support, labels, strict=True) if lab == "S"]

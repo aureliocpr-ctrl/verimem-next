@@ -54,6 +54,17 @@ def _share(text: str) -> float:
     return value
 
 
+def _progress(noun: str) -> Any:
+    """Progress on stderr: one updating line on a terminal, a line per step otherwise."""
+    tty = sys.stderr.isatty()
+
+    def report(done: int, total: int) -> None:
+        end = "\n" if not tty or done == total else ""
+        print(f"\r{done}/{total} {noun} checked", end=end, file=sys.stderr, flush=True)
+
+    return report
+
+
 def _command(args: argparse.Namespace) -> str:
     """The command line as typed, for the provenance line of generated reports."""
     return "verimem " + shlex.join(args.argv)
@@ -183,7 +194,7 @@ def cmd_audit(args: argparse.Namespace) -> int:
     if not rows:
         print("no (source, memory) pairs found in the input", file=sys.stderr)
         return 2
-    rep = audit_pairs(rows, _ready_verifier(args))
+    rep = audit_pairs(rows, _ready_verifier(args), progress=_progress("memories"))
     paths = write_report(rep, args.out, lang=args.lang)
     lo, hi = rep.unsupported_ci
     if rep.total == rep.counts.get("unjudged", 0):
@@ -214,7 +225,7 @@ def cmd_eval(args: argparse.Namespace) -> int:
     from .evalkit import evaluate_verifier, load_pairs, render_verifier_report, score_for_thresholds
 
     pairs = load_pairs(args.pairs)
-    rep, verdicts = evaluate_verifier(_ready_verifier(args), pairs)
+    rep, verdicts = evaluate_verifier(_ready_verifier(args), pairs, progress=_progress("pairs"))
     md = render_verifier_report(rep, dataset=str(args.pairs), command=_command(args))
     if args.markdown:
         Path(args.markdown).write_text(md, encoding="utf-8")
@@ -256,7 +267,7 @@ def cmd_calibrate(args: argparse.Namespace) -> int:
     verifier = _ready_verifier(args)
     loss = 0.08 if args.target_loss is None else args.target_loss
     th, prov = calibrate(verifier, load_pairs(args.pairs), target_loss=loss,
-                         max_admitted=args.max_admitted)
+                         max_admitted=args.max_admitted, progress=_progress("pairs"))
     pol = verifier.policy.with_thresholds(th, version=args.version,
                                           calibration={"verifier": {"dataset": str(args.pairs),
                                                                     **prov}})

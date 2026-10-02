@@ -224,3 +224,12 @@ def test_calibrate_takes_a_loss_target_or_an_admission_cap(tmp_path, capsys):
 def test_the_judge_precision_can_be_overridden_on_the_command_line(capsys):
     _, out = run(capsys, "doctor", "--judge", "lexical", "--judge-dtype", "bfloat16", "--json")
     assert json.loads(out)["judge_dtype"] == "bfloat16"
+
+
+def test_audit_prints_progress_on_stderr(tmp_path, capsys):
+    pairs = tmp_path / "p.jsonl"
+    pairs.write_text("".join(json.dumps({"source": f"Note {i}: Maria lives in Turin.",
+                                         "memory": "Maria lives in Turin."}) + "\n"
+                             for i in range(3)), encoding="utf-8")
+    code = main(["audit", str(pairs), "--out", str(tmp_path / "r"), "--judge", "lexical"])
+    assert code == 0 and "3/3 memories checked" in capsys.readouterr().err
