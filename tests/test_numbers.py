@@ -78,3 +78,14 @@ def test_ambiguous_thousands_keep_both_readings():
     assert q.values == {1.25, 1250.0}
     (q,) = extract("10.000")
     assert q.values == {10.0, 10000.0}
+
+
+def test_english_due_is_not_the_italian_number_two():
+    # "due to" is everywhere in English; it vetoed true claims whose source had no 2.
+    assert missing_quantities("He cancelled his tour due to dehydration.",
+                              "He was hospitalized for dehydration and cancelled the tour.") == []
+    assert missing_quantities("The payment is due on Friday.", "Pay on Friday, please.") == []
+    # Italian claims still count it, and an Italian source still matches an English "two".
+    assert missing_quantities("Abbiamo assunto due ingegneri.",
+                              "Abbiamo assunto tre ingegneri.") == ["due"]
+    assert missing_quantities("The user has two cats.", "Utente: ho due gatti.") == []

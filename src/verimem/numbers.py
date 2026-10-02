@@ -17,6 +17,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from .text import guess_language
+
 # ---------------------------------------------------------------- number words
 
 
@@ -72,6 +74,10 @@ _NUMBER_WORDS = {
     **{k: v for k, v in _english_words().items() if k not in {"one"}},
     **{k: v for k, v in _italian_words().items() if k not in {"uno", "sei"}},
 }
+# Italian number words that are also English words or names ("due to", "Otto"): in a claim
+# they count only when the claim is Italian. In a source they always count, since a number
+# found in the source can only prevent a refusal, never cause one.
+_AMBIGUOUS_ITALIAN = frozenset({"due", "otto", "nove"})
 _SCALES = {
     "k": 1e3, "thousand": 1e3, "thousands": 1e3, "mila": 1e3,
     "m": 1e6, "mln": 1e6, "million": 1e6, "millions": 1e6, "milione": 1e6, "milioni": 1e6,
@@ -140,8 +146,9 @@ def _readings(raw: str) -> set[float]:
     return {as_decimal}
 
 
-def extract(text: str) -> list[Quantity]:
-    """All quantities in `text`, left to right."""
+def extract(text: str, *, ambiguous_words: bool = True) -> list[Quantity]:
+    """All quantities in `text`, left to right; `ambiguous_words=False` skips the number
+    words that are also common words in another language (`_AMBIGUOUS_ITALIAN`)."""
     found: list[Quantity] = []
     taken: list[tuple[int, int]] = []
 
@@ -201,7 +208,7 @@ def extract(text: str) -> list[Quantity]:
         if word in _MONTHS or low in _ITALIAN_MONTH_FORMS:
             month = _MONTHS.get(word) or _MONTHS[low]
             add(word, m.start(), m.end(), {float(month)}, "month")
-        elif low in _NUMBER_WORDS:
+        elif low in _NUMBER_WORDS and (ambiguous_words or low not in _AMBIGUOUS_ITALIAN):
             add(word, m.start(), m.end(), {float(_NUMBER_WORDS[low])})
         elif low in _CLOCK_WORDS:
             add(word, m.start(), m.end(), set(_CLOCK_WORDS[low]))
@@ -219,7 +226,7 @@ def missing_quantities(claim: str, source: str) -> list[str]:
     numbers = [q for q in src if q.kind == "number"]
     months = [q for q in src if q.kind == "month"]
     missing: list[str] = []
-    for q in extract(claim):
+    for q in extract(claim, ambiguous_words=guess_language(claim) == "it"):
         pool = months if q.kind == "month" else numbers
         if not any(_same(a, b) for s in pool for a in q.values for b in s.values):
             missing.append(q.surface)
