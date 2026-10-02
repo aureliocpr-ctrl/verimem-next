@@ -162,24 +162,25 @@ class HFNLIJudge:
     def _raw_score(self, pairs: Sequence[tuple[str, str]]) -> list[NLIScores]:
         import torch
 
-        out: list[NLIScores] = []
+        # Batches of similar length waste less time on padding; results go back in order.
+        order = sorted(range(len(pairs)), key=lambda i: len(pairs[i][0]) + len(pairs[i][1]))
+        out: list[NLIScores] = [NLIScores(entailment=0.0)] * len(pairs)
         with torch.inference_mode():
-            for i in range(0, len(pairs), self.batch_size):
-                batch = pairs[i : i + self.batch_size]
-                enc = self._encode([p for p, _ in batch], [h for _, h in batch])
+            for start in range(0, len(order), self.batch_size):
+                idx = order[start : start + self.batch_size]
+                enc = self._encode([pairs[i][0] for i in idx], [pairs[i][1] for i in idx])
                 logits = self._model(**enc).logits
                 if self._sigmoid:
-                    probs = torch.sigmoid(logits[:, 0]).tolist()
-                    out.extend(NLIScores(entailment=float(p)) for p in probs)
+                    for i, p in zip(idx, torch.sigmoid(logits[:, 0]).tolist(), strict=True):
+                        out[i] = NLIScores(entailment=float(p))
                     continue
-                probs = torch.softmax(logits, dim=-1).tolist()
                 c, n = self._contra, self._neutral
-                for row in probs:
-                    out.append(NLIScores(
+                for i, row in zip(idx, torch.softmax(logits, dim=-1).tolist(), strict=True):
+                    out[i] = NLIScores(
                         entailment=float(row[self._entail]),
                         contradiction=float(row[c]) if c is not None else None,
                         neutral=float(row[n]) if n is not None else None,
-                    ))
+                    )
         return out
 
     def _encode(self, premises: list[str], hypotheses: list[str]) -> Any:
