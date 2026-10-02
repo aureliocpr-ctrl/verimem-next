@@ -20,7 +20,8 @@ async def session_run(db: str) -> tuple[list[str], dict]:
         await s.initialize()
         tools = sorted(t.name for t in (await s.list_tools()).tools)
         out = await s.call_tool("remember", {"claim": "Maria moved to Milan.",
-                                             "source": "Maria moved from Rome to Milan."})
+                                             "source": "Maria moved from Rome to Milan.",
+                                             "source_author": "user"})
         return tools, json.loads(out.content[0].text)
 
 

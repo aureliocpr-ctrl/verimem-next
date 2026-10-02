@@ -202,6 +202,14 @@ def test_bad_inputs_are_rejected():
         m.review("nope", approve=True, reviewer="x")
 
 
+def test_ask_and_recall_refuse_a_k_below_one():
+    m = make_memory()
+    m.remember("Maria moved to Milan in 2021.", source=SRC)
+    for call in (m.ask, m.recall):
+        with pytest.raises(ValueError, match="k must be at least 1"):
+            call("Where did Maria move?", k=0)
+
+
 def test_store_survives_reopening(tmp_path):
     path = tmp_path / "mem.db"
     with make_memory(path=path) as m:

@@ -29,7 +29,8 @@ new command line and new MCP tools (the old `hippo_*` tools are gone). The reaso
   self-contained HTML page, JSON, and a review sheet) and `verimem audit-review` (an estimate checked by a person, with a 95%
   interval).
 - **Interfaces**: a command line with 17 commands and an MCP server on stdio; the tool that
-  approves facts is off unless `--allow-review`.
+  approves facts is off unless `--allow-review`, and `remember` must be told who wrote the
+  source (no default author).
 - **Data and documents**: regression cases, TruthfulQA pairs, three QA sets,
   [`docs/EVAL.md`](docs/EVAL.md), design notes and nine ADRs.
 

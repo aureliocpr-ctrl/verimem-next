@@ -45,9 +45,12 @@ def build_server(memory: Memory, *, allow_review: bool = False) -> Any:
     server = Server("verimem", instructions=INSTRUCTIONS, log_level="WARNING")
 
     @server.tool()
-    def remember(claim: str, source: str, source_author: str = "user", subject: str | None = None,
-                 origin: str = "") -> dict[str, Any]:
-        """Verify `claim` against `source` and store it. Returns the status and the evidence."""
+    def remember(claim: str, source: str,
+                 source_author: Literal["user", "document", "system", "agent", "tool", "web"],
+                 subject: str | None = None, origin: str = "") -> dict[str, Any]:
+        """Verify `claim` against `source` and store it. Returns the status and the evidence.
+
+        `source_author` is who wrote `source`; only user, document and system can verify."""
         r = memory.remember(claim, source=source, author=source_author, subject=subject,
                             origin=origin, written_by="mcp")
         out = r.to_dict()

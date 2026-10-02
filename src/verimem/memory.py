@@ -44,6 +44,11 @@ def to_utc_iso(value: str | datetime | None) -> str | None:
     return iso.replace("+00:00", "Z")
 
 
+def _check_k(k: int) -> None:
+    if k < 1:
+        raise ValueError("k must be at least 1")
+
+
 def status_for(verdict: Verdict, *, trusted_source: bool,
                judge_is_model: bool) -> tuple[Status, str]:
     """The only mapping from a verdict to a stored status (ADR-0003, ADR-0004)."""
@@ -263,12 +268,14 @@ class Memory:
     def recall(self, query: str, *, k: int = 5,
                include: Sequence[Status | str] = (Status.VERIFIED,)) -> list[Recalled]:
         """Full-text search over facts with the given statuses (verified only by default)."""
+        _check_k(k)
         statuses = [Status(s).value for s in include]
         return [Recalled(self._to_fact(r), score)
                 for r, score in self.store.search(query, statuses, limit=k)]
 
     def ask(self, question: str, *, k: int = 5) -> Answer:
         """Verified facts that answer `question`, or an explicit abstention with its reason."""
+        _check_k(k)
         hits = self.store.search(question, [Status.VERIFIED.value], limit=max(4 * k, 20))
         if not hits:
             return Answer(question, (), True, "no verified fact shares words with the question")

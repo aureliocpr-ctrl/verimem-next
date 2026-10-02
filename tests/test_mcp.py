@@ -37,9 +37,11 @@ def test_tools_listed_without_review_by_default():
 
 def test_remember_and_recall_through_mcp():
     server = build_server(memory())
-    out = call(server, "remember", claim="Maria moved to Milan in 2021.", source=SRC)
+    out = call(server, "remember", claim="Maria moved to Milan in 2021.", source=SRC,
+               source_author="user")
     assert out["status"] == "verified" and out["served_as_fact"] is True
-    bad = call(server, "remember", claim="Maria is a financial analyst.", source=SRC)
+    bad = call(server, "remember", claim="Maria is a financial analyst.", source=SRC,
+               source_author="user")
     assert bad["status"] == "quarantined" and bad["served_as_fact"] is False
     web = call(server, "remember", claim="Maria moved to Milan.", source=SRC,
                source_author="web")
@@ -47,6 +49,15 @@ def test_remember_and_recall_through_mcp():
     hits = call(server, "recall", query="Maria Milan")
     assert [h["text"] for h in (hits if isinstance(hits, list) else [hits])] == [
         "Maria moved to Milan in 2021."]
+
+
+def test_remember_must_be_told_who_wrote_the_source():
+    # A default author would make web text the agent forgot to label count as the user's.
+    tools = {t.name: t for t in asyncio.run(build_server(memory()).list_tools())}
+    schema = tools["remember"].inputSchema
+    assert "source_author" in schema["required"]
+    assert set(schema["properties"]["source_author"]["enum"]) == {
+        "user", "document", "system", "agent", "tool", "web"}
 
 
 def test_check_does_not_store():

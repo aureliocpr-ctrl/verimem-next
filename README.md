@@ -158,8 +158,10 @@ Other commands: `recall`, `ask`, `queue`, `review`, `forget`, `stats`, `chain ve
 }
 ```
 
-Tools: `remember`, `recall`, `ask`, `check`, `review_queue`, `forget`, `stats`. The `review`
-tool, which lets the agent approve facts the verifier did not verify, is only there with
+Tools: `remember`, `recall`, `ask`, `check`, `review_queue`, `forget`, `stats`. `remember`
+requires `source_author` (user, document, system, agent, tool or web): there is no default,
+so web text the agent forgot to label cannot pass for the user's words. The `review` tool,
+which lets the agent approve facts the verifier did not verify, is only there with
 `verimem mcp --allow-review`.
 
 ## Audit the memories you already have
