@@ -1,0 +1,3 @@
+include CHANGELOG.md
+include datasets/review-cases.csv
+recursive-include tests *.py

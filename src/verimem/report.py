@@ -79,6 +79,7 @@ class AuditReport:
     numeric_violations: int
     rows: list[dict[str, Any]] = field(default_factory=list)
     calibration: dict[str, Any] | None = None
+    judge_is_model: bool = True
 
     def to_dict(self) -> dict[str, Any]:
         return dict(self.__dict__)
@@ -99,7 +100,8 @@ def audit_pairs(rows: Sequence[AuditRow], verifier: Verifier) -> AuditReport:
         counts={lab.value: counts.get(lab.value, 0) for lab in Label},
         unsupported_share=k / len(judged) if judged else float("nan"),
         unsupported_ci=wilson(k, len(judged)), numeric_violations=numeric, rows=out_rows,
-        calibration=verifier.policy.calibration)
+        calibration=verifier.policy.calibration,
+        judge_is_model=bool(judged) and bool(getattr(verifier.judge, "is_model", False)))
 
 
 def _row(r: AuditRow, v: Verdict) -> dict[str, Any]:
@@ -116,6 +118,8 @@ def _row(r: AuditRow, v: Verdict) -> dict[str, Any]:
 _TEXT = {
     "en": {
         "title": "Memory reliability report",
+        "baseline": ("**Warning: these verdicts come from {judge}, a word-overlap baseline, not "
+                     "a model. The numbers below are not a reliability estimate.**"),
         "summary": "Summary",
         "pairs": "memories checked against the source they were extracted from",
         "supported": "supported by their source",
@@ -153,6 +157,9 @@ _TEXT = {
     },
     "it": {
         "title": "Rapporto di affidabilità della memoria",
+        "baseline": ("**Attenzione: questi verdetti vengono da {judge}, un confronto di parole, "
+                     "non da un modello. I numeri qui sotto non sono una stima "
+                     "dell'affidabilità.**"),
         "summary": "Sintesi",
         "pairs": "memorie confrontate con il testo da cui sono state estratte",
         "supported": "sostenute dalla fonte",
@@ -211,8 +218,10 @@ def render_markdown(rep: AuditReport, *, lang: str = "en", examples: int = 10) -
     flagged = rep.counts.get("not_supported", 0) + rep.counts.get("contradicted", 0)
     lo, hi = rep.unsupported_ci
     share = "n/a" if judged == 0 else f"{rep.unsupported_share:.0%} ({lo:.0%}-{hi:.0%})"
-    lines = [
-        f"# {t['title']}", "",
+    lines = [f"# {t['title']}", ""]
+    if not rep.judge_is_model and rep.total > rep.counts.get("unjudged", 0):
+        lines += [t["baseline"].format(judge=rep.judge), ""]
+    lines += [
         f"## {t['summary']}", "",
         f"- **{rep.total}** {t['pairs']}.",
         f"- **{rep.counts.get('supported', 0)}** {t['supported']}.",

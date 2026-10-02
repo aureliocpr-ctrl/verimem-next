@@ -77,4 +77,4 @@ I verdetti vengono da un giudice automatico (hf:MoritzLaurer/bge-m3-zeroshot-v2.
 - threshold: 0.4
 - measured: 17/25 answerable questions answered with the right fact, 8 wrong abstentions; 25/25 unanswerable questions abstained, 0 false answers (verimem eval-ask datasets/qa-mini.json)
 
-Generato da verimem 0.9.0.dev0 il 2026-10-02 12:38 UTC.
+Generato da verimem 0.9.0.dev0 il 2026-10-02 12:41 UTC.

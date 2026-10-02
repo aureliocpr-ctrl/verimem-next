@@ -86,3 +86,12 @@ def test_load_rows_with_italian_headers(tmp_path):
     rows = load_audit_rows(p)
     assert [(r.source, r.memory) for r in rows] == [("La fonte.", "Una memoria."),
                                                    ("", "Senza fonte.")]
+
+
+def test_a_report_made_with_the_word_overlap_baseline_says_so():
+    from verimem.judges.lexical import LexicalJudge
+
+    lexical = Verifier(judge=LexicalJudge(), policy=make_policy())
+    for lang, warning in (("en", "not a reliability estimate"), ("it", "non sono una stima")):
+        assert warning in render_markdown(audit_pairs(ROWS, lexical), lang=lang)
+        assert warning not in render_markdown(audit_pairs(ROWS, verifier()), lang=lang)

@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-10-02 12:38 UTC",
+  "created_at": "2026-10-02 12:41 UTC",
   "verimem_version": "0.9.0.dev0",
   "judge": "hf:MoritzLaurer/bge-m3-zeroshot-v2.0-c@705510dfe0f3",
   "policy": "0.9.0-provisional",
@@ -398,5 +398,6 @@
       "threshold": 0.4,
       "measured": "17/25 answerable questions answered with the right fact, 8 wrong abstentions; 25/25 unanswerable questions abstained, 0 false answers (verimem eval-ask datasets/qa-mini.json)"
     }
-  }
+  },
+  "judge_is_model": true
 }
