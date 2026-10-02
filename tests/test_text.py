@@ -29,6 +29,13 @@ def test_abbreviations_and_initials_do_not_split():
     assert texts("Ho parlato con il Dott. Bianchi, ecc. e poi sono uscito.") == [
         "Ho parlato con il Dott. Bianchi, ecc. e poi sono uscito."
     ]
+    # titles and offices in Italian business chats
+    assert texts("Lavoro in banca (sono il resp. IT). Il dir. Neri è d'accordo.") == [
+        "Lavoro in banca (sono il resp. IT).", "Il dir. Neri è d'accordo."
+    ]
+    assert texts("Chiama l'uff. acquisti, tel. 02 1234, rif. ordine 7.") == [
+        "Chiama l'uff. acquisti, tel. 02 1234, rif. ordine 7."
+    ]
 
 
 def test_decimals_and_versions_do_not_split():
