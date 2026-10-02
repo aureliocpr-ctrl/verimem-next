@@ -33,11 +33,15 @@ verimem stores a fact only when its source supports it, and answers only from ve
 
 def build_server(memory: Memory, *, allow_review: bool = False) -> Any:
     try:
-        from mcp.server.fastmcp import FastMCP
-    except ImportError as e:  # pragma: no cover - exercised only without the extra
-        raise SystemExit("The MCP server needs the 'mcp' extra: pip install 'verimem[mcp]'") from e
+        from mcp.server.mcpserver import MCPServer as Server  # mcp 2.x
+    except ImportError:
+        try:
+            from mcp.server.fastmcp import FastMCP as Server  # mcp 1.x
+        except ImportError as e:  # pragma: no cover - exercised only without the extra
+            raise SystemExit(
+                "The MCP server needs the 'mcp' extra: pip install 'verimem[mcp]'") from e
 
-    server = FastMCP("verimem", instructions=INSTRUCTIONS, log_level="WARNING")
+    server = Server("verimem", instructions=INSTRUCTIONS, log_level="WARNING")
 
     @server.tool()
     def remember(claim: str, source: str, source_author: str = "user", subject: str | None = None,

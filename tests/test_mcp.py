@@ -16,7 +16,10 @@ SRC = "Maria told us she moved from Rome to Milan in 2021 for a job at a bank."
 
 def call(server, tool, **args):
     result = asyncio.run(server.call_tool(tool, args))
-    content = result[0] if isinstance(result, tuple) else result
+    if hasattr(result, "content"):  # mcp 2.x: a CallToolResult
+        content = result.content
+    else:  # mcp 1.x: content, or (content, structured)
+        content = result[0] if isinstance(result, tuple) else result
     return json.loads(content[0].text) if content else None
 
 

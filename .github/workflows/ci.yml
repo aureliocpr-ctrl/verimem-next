@@ -24,3 +24,16 @@ jobs:
         run: ruff check src tests
       - name: Tests (no model downloads)
         run: pytest -m "not model" -q
+
+  mcp-v1:
+    # A fresh install resolves mcp 2.x; the server also supports 1.x (FastMCP).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install with mcp 1.x
+        run: python -m pip install -e ".[dev,mcp]" "mcp<2"
+      - name: MCP tests
+        run: pytest tests/test_mcp.py tests/test_mcp_stdio.py -q
