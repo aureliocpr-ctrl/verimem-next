@@ -220,12 +220,17 @@ def render_verifier_report(r: VerifierReport, *, dataset: str, command: str) -> 
         f"{r.seconds_per_pair:.2f} |",
         "",
     ]
-    if r.errors:
-        shown = r.errors[:15]
-        lines += [f"Disagreements with the labels ({len(shown)} of {len(r.errors)}):", ""]
-        lines += [f"- `{e['label']}` → `{e['verdict']}` (p={e['support']}): {e['claim']}"
-                  for e in shown]
-        lines.append("")
+    # False accepts first: a fact the source does not support is the costly error.
+    accepted = [e for e in r.errors if e["verdict"] == Label.SUPPORTED.value]
+    refused = [e for e in r.errors if e["verdict"] != Label.SUPPORTED.value]
+    for title, errs in (("Verified although labelled N or C", accepted),
+                        ("Not verified although labelled S", refused)):
+        if errs:
+            shown = errs[:15]
+            lines += [f"{title} ({len(shown)} of {len(errs)}):", ""]
+            lines += [f"- `{e['label']}` → `{e['verdict']}` (p={e['support']}): {e['claim']}"
+                      for e in shown]
+            lines.append("")
     return "\n".join(lines)
 
 

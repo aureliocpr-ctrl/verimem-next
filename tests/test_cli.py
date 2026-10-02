@@ -1,6 +1,7 @@
 """The CLI with the lexical baseline judge: it exercises every command without models.
 The lexical judge can never verify (ADR-0004), which these tests also show."""
 
+import csv
 import json
 import re
 
@@ -131,3 +132,27 @@ def test_eval_ask_writes_markdown_with_its_provenance(tmp_path, capsys):
     assert code == 0
     assert f"`verimem eval-ask {qa} --judge lexical --markdown {md}`" in text
     assert "`lexical:v1`" in text and "| 2 (1) |" in text
+
+
+def test_audit_review_turns_a_reviewed_sample_into_an_estimate(tmp_path, capsys):
+    pairs = tmp_path / "pairs.jsonl"
+    pairs.write_text("".join(json.dumps({"source": "We hired 3 people.", "memory": m}) + "\n"
+                             for m in ("We hired 3 people.", "We hired 5 people.")),
+                     encoding="utf-8")
+    folder = tmp_path / "rep"
+    run(capsys, "audit", str(pairs), "--out", str(folder), "--judge", "lexical")
+    code, out = run(capsys, "audit-review", str(folder))
+    assert code == 0 and "No estimate yet" in out
+
+    review = folder / "review.csv"
+    with review.open(encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.DictReader(f))
+    for r in rows:  # the reviewer agrees with the judge on both
+        r["stated_by_source"] = "no" if r["verdict"] == "not_supported" else "sì"
+    with review.open("w", encoding="utf-8-sig", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+        w.writeheader()
+        w.writerows(rows)
+    code, out = run(capsys, "audit-review", str(folder), "--lang", "it")
+    assert code == 0 and "Memorie non dette dalla loro fonte: 50%" in out
+    assert (folder / "review-summary.md").read_text("utf-8").startswith("# Revisione umana")

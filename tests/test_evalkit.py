@@ -13,6 +13,7 @@ from verimem.evalkit import (
     evaluate_verifier,
     held_out,
     load_pairs,
+    render_verifier_report,
     threshold_for_loss,
 )
 from verimem.judges import NLIScores
@@ -115,3 +116,15 @@ def test_evaluate_ask_counts_answers_and_abstentions(tmp_path):
     assert (rep.answered_right, rep.wrong_abstentions, rep.right_abstentions,
             rep.false_answers) == (2, 0, 2, 0)
     assert rep.auroc == 1.0
+
+
+def test_report_lists_false_accepts_before_misses():
+    misses = [Pair(f"Alpha{i} beta{i}.", f"alpha{i} gamma{i}", "S", "en", f"s{i}")
+              for i in range(20)]
+    accept = Pair("Delta epsilon zeta.", "delta epsilon", "N", "en", "n0")
+    v = Verifier(judge=FakeJudge(), policy=make_policy())
+    rep, _ = evaluate_verifier(v, [*misses, accept], bootstrap_rounds=20)
+    md = render_verifier_report(rep, dataset="d", command="c")
+    assert "Verified although labelled N or C (1 of 1)" in md
+    assert "Not verified although labelled S (15 of 20)" in md
+    assert md.index("delta epsilon") < md.index("alpha0 gamma0")

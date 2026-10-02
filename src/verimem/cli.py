@@ -174,9 +174,24 @@ def cmd_audit(args: argparse.Namespace) -> int:
     if rep.total == rep.counts.get("unjudged", 0):
         print(f"{rep.total} memories read; no memory had a source, so none could be checked.")
     else:
-        print(f"{rep.total} memories checked; not supported by their source: "
+        judged = rep.total - rep.counts.get("unjudged", 0)
+        print(f"{rep.total} memories, {judged} with a source; not supported by it: "
               f"{rep.unsupported_share:.0%} (95% CI {lo:.0%}-{hi:.0%}).")
     print("written: " + ", ".join(str(p) for p in paths))
+    return 0
+
+
+def cmd_audit_review(args: argparse.Namespace) -> int:
+    from .report import load_review, render_review_markdown, summarize_review
+
+    folder = Path(args.folder)
+    report = json.loads((folder / "report.json").read_text(encoding="utf-8"))
+    summary = summarize_review(report, load_review(folder / "review.csv"))
+    md = render_review_markdown(summary, lang=args.lang)
+    (folder / "review-summary.md").write_text(md, encoding="utf-8")
+    (folder / "review-summary.json").write_text(
+        json.dumps(summary.to_dict(), indent=2) + "\n", encoding="utf-8")
+    _emit(args, summary.to_dict(), md)
     return 0
 
 
@@ -337,6 +352,11 @@ def build_parser() -> argparse.ArgumentParser:
     sp = add("audit", cmd_audit, "memory reliability report from (source, memory) pairs")
     sp.add_argument("pairs", help="CSV or JSONL with columns source and memory")
     sp.add_argument("--out", required=True, help="output folder")
+    sp.add_argument("--lang", default="en", choices=["en", "it"])
+
+    sp = add("audit-review", cmd_audit_review,
+             "estimate from a person's answers in an audit's review.csv")
+    sp.add_argument("folder", help="the folder written by `verimem audit`")
     sp.add_argument("--lang", default="en", choices=["en", "it"])
 
     sp = add("eval", cmd_eval, "evaluate the verifier on labelled pairs (S/N/C)")

@@ -58,8 +58,26 @@ def test_written_files(tmp_path):
     assert data["total"] == 4
     with paths[2].open(encoding="utf-8-sig") as f:
         review = list(csv.DictReader(f))
-    assert {r["id"] for r in review} == {"2", "3", "4"}  # everything not supported or unjudged
-    assert all(r["reviewer_ok"] == "" for r in review)
+    # Every judged memory, flagged ones first, with its source for the reviewer.
+    assert {r["id"] for r in review[:2]} == {"2", "3"} and review[2]["id"] == "1"
+    assert {r["source"] for r in review[:2]} == {ROWS[1].source, ROWS[2].source}
+    assert all(r["stated_by_source"] == "" for r in review)
+
+
+def test_italian_report_explains_in_italian():
+    it = render_markdown(audit_pairs(ROWS, verifier()), lang="it")
+    assert "**1** sostenute dalla fonte" in it
+    assert "la fonte non lo dice" in it
+    assert "numeri o date assenti nella fonte: 40%" in it
+    assert "the source does not state this" not in it
+    assert "quantities not in the source" not in it
+
+
+def test_calibration_is_described_in_words_not_json():
+    pol = make_policy(calibration={"verifier": {"dataset": "pairs.csv", "pairs": 300}})
+    rep = audit_pairs(ROWS, Verifier(judge=FakeJudge(), policy=pol))
+    md = render_markdown(rep, lang="en")
+    assert "- dataset: pairs.csv" in md and "```" not in md
 
 
 def test_load_rows_with_italian_headers(tmp_path):
